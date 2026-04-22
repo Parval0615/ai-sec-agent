@@ -1,0 +1,8 @@
+# 模型配置
+EMBEDDING_MODEL = "BAAI/bge-small-zh-v1.5"
+LLM_MODEL = "qwen2:7b"
+
+# RAG
+CHUNK_SIZE = 500
+CHUNK_OVERLAP = 100
+TOP_K = 5
