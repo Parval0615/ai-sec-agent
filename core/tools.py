@@ -8,7 +8,7 @@ retriever = init_rag_retriever()
 @tool
 def search_knowledge_base(query: str) -> str:
     """
-    用于查询本地知识库PDF内容，仅当问题需要文档内信息时使用
+    用于查询已加载的PDF文档内容，只要用户问文档里的内容、页面上写了什么、PDF相关的问题，必须调用这个工具
     """
     return rag_query(retriever, query)
 
