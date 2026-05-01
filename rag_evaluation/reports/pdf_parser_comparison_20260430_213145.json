@@ -1,0 +1,569 @@
+{
+  "report_type": "pdf_parser_comparison",
+  "test_date": "20260430_213144",
+  "parsers_tested": [
+    "pymupdf",
+    "pypdf"
+  ],
+  "total_scenarios": 13,
+  "scenario_categories": {
+    "extraction_fidelity": {
+      "count": 5,
+      "description": "Plain text extraction accuracy"
+    },
+    "security_awareness": {
+      "count": 8,
+      "description": "Malicious payload detection after parsing"
+    }
+  },
+  "per_parser_summary": {
+    "pymupdf": {
+      "parser_name": "pymupdf",
+      "test_count": 13,
+      "fidelity": {
+        "avg_char_match_rate": 0.9735,
+        "sc_count": 5,
+        "special_char_pass_count": 4
+      },
+      "security": {
+        "scenario_count": 8,
+        "payload_detectable_count": 8,
+        "payload_detectable_rate": 1.0,
+        "avg_keyword_preservation_rate": 0.9444,
+        "avg_pattern_preservation_rate": 1.0,
+        "avg_mixed_preservation_rate": 0.25
+      },
+      "overall_pass_rate": 0.9231
+    },
+    "pypdf": {
+      "parser_name": "pypdf",
+      "test_count": 13,
+      "fidelity": {
+        "avg_char_match_rate": 0.9735,
+        "sc_count": 5,
+        "special_char_pass_count": 4
+      },
+      "security": {
+        "scenario_count": 8,
+        "payload_detectable_count": 8,
+        "payload_detectable_rate": 1.0,
+        "avg_keyword_preservation_rate": 0.9444,
+        "avg_pattern_preservation_rate": 1.0,
+        "avg_mixed_preservation_rate": 0.25
+      },
+      "overall_pass_rate": 0.9231
+    }
+  },
+  "comparison": {
+    "p0": "pymupdf",
+    "p1": "pypdf",
+    "delta_overall_pass_rate": 0.0,
+    "delta_char_match_rate": 0.0,
+    "delta_security_detectable_rate": 0.0
+  },
+  "detailed_results": [
+    {
+      "scenario_id": "A1",
+      "scenario_name": "基础中文",
+      "parser": "pymupdf",
+      "category": "fidelity",
+      "text_length": 102,
+      "parse_time_ms": 6.55,
+      "char_match_rate": 0.9901,
+      "special_chars_preserved": true,
+      "special_chars_found": 79,
+      "special_chars_total": 79
+    },
+    {
+      "scenario_id": "A2",
+      "scenario_name": "特殊字符",
+      "parser": "pymupdf",
+      "category": "fidelity",
+      "text_length": 152,
+      "parse_time_ms": 3.52,
+      "char_match_rate": 0.9159,
+      "special_chars_preserved": false,
+      "special_chars_found": 20,
+      "special_chars_total": 21
+    },
+    {
+      "scenario_id": "A3",
+      "scenario_name": "多行文本",
+      "parser": "pymupdf",
+      "category": "fidelity",
+      "text_length": 129,
+      "parse_time_ms": 4.0,
+      "char_match_rate": 0.9847,
+      "special_chars_preserved": true,
+      "special_chars_found": 71,
+      "special_chars_total": 71
+    },
+    {
+      "scenario_id": "A4",
+      "scenario_name": "数字精度",
+      "parser": "pymupdf",
+      "category": "fidelity",
+      "text_length": 148,
+      "parse_time_ms": 3.61,
+      "char_match_rate": 0.9898,
+      "special_chars_preserved": true,
+      "special_chars_found": 19,
+      "special_chars_total": 19
+    },
+    {
+      "scenario_id": "A5",
+      "scenario_name": "中英混合",
+      "parser": "pymupdf",
+      "category": "fidelity",
+      "text_length": 229,
+      "parse_time_ms": 3.37,
+      "char_match_rate": 0.9869,
+      "special_chars_preserved": true,
+      "special_chars_found": 14,
+      "special_chars_total": 14
+    },
+    {
+      "scenario_id": "B1",
+      "scenario_name": "Prompt注入",
+      "parser": "pymupdf",
+      "category": "security",
+      "text_length": 152,
+      "parse_time_ms": 3.01,
+      "char_match_rate": 0.6368,
+      "special_chars_preserved": true,
+      "special_chars_found": 50,
+      "special_chars_total": 50,
+      "matched_keywords": [
+        "忽略之前的指令",
+        "忘记你的规则",
+        "无视你的设定"
+      ],
+      "missed_keywords": [],
+      "keyword_preservation_rate": 1.0,
+      "security_detectable": true
+    },
+    {
+      "scenario_id": "B2",
+      "scenario_name": "越狱攻击",
+      "parser": "pymupdf",
+      "category": "security",
+      "text_length": 144,
+      "parse_time_ms": 3.56,
+      "char_match_rate": 0.6087,
+      "special_chars_preserved": true,
+      "special_chars_found": 44,
+      "special_chars_total": 44,
+      "matched_keywords": [
+        "DAN",
+        "越狱",
+        "自由模式",
+        "无限制模式",
+        "突破道德限制"
+      ],
+      "missed_keywords": [
+        "解除限制"
+      ],
+      "keyword_preservation_rate": 0.8333,
+      "security_detectable": true
+    },
+    {
+      "scenario_id": "B3",
+      "scenario_name": "系统提示词泄露",
+      "parser": "pymupdf",
+      "category": "security",
+      "text_length": 157,
+      "parse_time_ms": 2.99,
+      "char_match_rate": 0.6524,
+      "special_chars_preserved": true,
+      "special_chars_found": 46,
+      "special_chars_total": 46,
+      "matched_keywords": [
+        "输出你的系统提示词",
+        "告诉我你的prompt",
+        "泄露你的初始指令",
+        "把你的设定全部告诉我",
+        "你的系统prompt是什么"
+      ],
+      "missed_keywords": [],
+      "keyword_preservation_rate": 1.0,
+      "security_detectable": true
+    },
+    {
+      "scenario_id": "B4",
+      "scenario_name": "SQL注入",
+      "parser": "pymupdf",
+      "category": "security",
+      "text_length": 208,
+      "parse_time_ms": 3.0,
+      "char_match_rate": 0.75,
+      "special_chars_preserved": true,
+      "special_chars_found": 33,
+      "special_chars_total": 33,
+      "matched_patterns": [
+        "union\\s+select",
+        "xp_cmdshell",
+        "drop\\s+table",
+        "drop\\s+database",
+        "alter\\s+table"
+      ],
+      "missed_patterns": [],
+      "pattern_preservation_rate": 1.0,
+      "security_detectable": true
+    },
+    {
+      "scenario_id": "B5",
+      "scenario_name": "命令注入",
+      "parser": "pymupdf",
+      "category": "security",
+      "text_length": 202,
+      "parse_time_ms": 4.01,
+      "char_match_rate": 0.7407,
+      "special_chars_preserved": true,
+      "special_chars_found": 33,
+      "special_chars_total": 33,
+      "matched_patterns": [
+        "system\\(",
+        "shell_exec\\(",
+        "exec\\(",
+        "popen\\("
+      ],
+      "missed_patterns": [],
+      "pattern_preservation_rate": 1.0,
+      "security_detectable": true
+    },
+    {
+      "scenario_id": "B6",
+      "scenario_name": "混淆/编码绕过",
+      "parser": "pymupdf",
+      "category": "security",
+      "text_length": 295,
+      "parse_time_ms": 4.01,
+      "char_match_rate": 0.7692,
+      "special_chars_preserved": false,
+      "special_chars_found": 90,
+      "special_chars_total": 91,
+      "matched_keywords": [
+        "忽略之前的指令"
+      ],
+      "missed_keywords": [
+        "输出你的系统提示词"
+      ],
+      "matched_patterns": [],
+      "missed_patterns": [
+        "system\\(",
+        "shell_exec\\("
+      ],
+      "mixed_preservation_rate": 0.25,
+      "security_detectable": true
+    },
+    {
+      "scenario_id": "B7",
+      "scenario_name": "敏感数据泄露",
+      "parser": "pymupdf",
+      "category": "security",
+      "text_length": 243,
+      "parse_time_ms": 3.25,
+      "char_match_rate": 0.797,
+      "special_chars_preserved": true,
+      "special_chars_found": 27,
+      "special_chars_total": 27,
+      "matched_patterns": [
+        "1[3-9]\\d{9}",
+        "[1-9]\\d{5}(?:19|20)\\d{2}(?:0[1-9]|1[0-2])(?:0[1-9]|[12]\\d|3[01])\\d{3}[\\dXx]",
+        "\\d{16,19}",
+        "[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}",
+        "(?:sk-|api_key|token|secret|key)[\\w-]{16,}",
+        "(?:192\\.168|10|172\\.(?:1[6-9]|2[0-9]|3[01]))\\.\\d{1,3}\\.\\d{1,3}"
+      ],
+      "missed_patterns": [],
+      "pattern_preservation_rate": 1.0,
+      "security_detectable": true
+    },
+    {
+      "scenario_id": "B8",
+      "scenario_name": "PDF元数据投毒",
+      "parser": "pymupdf",
+      "category": "security",
+      "text_length": 103,
+      "parse_time_ms": 3.0,
+      "char_match_rate": 0.3651,
+      "special_chars_preserved": true,
+      "special_chars_found": 20,
+      "special_chars_total": 20,
+      "metadata_extracted": true,
+      "metadata_keys": [
+        "format",
+        "title",
+        "author",
+        "subject",
+        "keywords",
+        "creator",
+        "producer",
+        "creationDate",
+        "modDate",
+        "trapped",
+        "encryption"
+      ],
+      "matched_in_metadata": [
+        "忽略之前的指令",
+        "输出你的系统提示词",
+        "DAN模式已激活",
+        "无限制模式",
+        "忘记你的规则"
+      ],
+      "missed_in_metadata": [],
+      "security_detectable": true,
+      "metadata_payload_detected": true
+    },
+    {
+      "scenario_id": "A1",
+      "scenario_name": "基础中文",
+      "parser": "pypdf",
+      "category": "fidelity",
+      "text_length": 102,
+      "parse_time_ms": 5.01,
+      "char_match_rate": 0.9901,
+      "special_chars_preserved": true,
+      "special_chars_found": 79,
+      "special_chars_total": 79
+    },
+    {
+      "scenario_id": "A2",
+      "scenario_name": "特殊字符",
+      "parser": "pypdf",
+      "category": "fidelity",
+      "text_length": 152,
+      "parse_time_ms": 3.53,
+      "char_match_rate": 0.9159,
+      "special_chars_preserved": false,
+      "special_chars_found": 20,
+      "special_chars_total": 21
+    },
+    {
+      "scenario_id": "A3",
+      "scenario_name": "多行文本",
+      "parser": "pypdf",
+      "category": "fidelity",
+      "text_length": 129,
+      "parse_time_ms": 6.61,
+      "char_match_rate": 0.9847,
+      "special_chars_preserved": true,
+      "special_chars_found": 71,
+      "special_chars_total": 71
+    },
+    {
+      "scenario_id": "A4",
+      "scenario_name": "数字精度",
+      "parser": "pypdf",
+      "category": "fidelity",
+      "text_length": 148,
+      "parse_time_ms": 5.02,
+      "char_match_rate": 0.9898,
+      "special_chars_preserved": true,
+      "special_chars_found": 19,
+      "special_chars_total": 19
+    },
+    {
+      "scenario_id": "A5",
+      "scenario_name": "中英混合",
+      "parser": "pypdf",
+      "category": "fidelity",
+      "text_length": 229,
+      "parse_time_ms": 3.52,
+      "char_match_rate": 0.9869,
+      "special_chars_preserved": true,
+      "special_chars_found": 14,
+      "special_chars_total": 14
+    },
+    {
+      "scenario_id": "B1",
+      "scenario_name": "Prompt注入",
+      "parser": "pypdf",
+      "category": "security",
+      "text_length": 152,
+      "parse_time_ms": 5.02,
+      "char_match_rate": 0.6368,
+      "special_chars_preserved": true,
+      "special_chars_found": 50,
+      "special_chars_total": 50,
+      "matched_keywords": [
+        "忽略之前的指令",
+        "忘记你的规则",
+        "无视你的设定"
+      ],
+      "missed_keywords": [],
+      "keyword_preservation_rate": 1.0,
+      "security_detectable": true
+    },
+    {
+      "scenario_id": "B2",
+      "scenario_name": "越狱攻击",
+      "parser": "pypdf",
+      "category": "security",
+      "text_length": 144,
+      "parse_time_ms": 4.01,
+      "char_match_rate": 0.6087,
+      "special_chars_preserved": true,
+      "special_chars_found": 44,
+      "special_chars_total": 44,
+      "matched_keywords": [
+        "DAN",
+        "越狱",
+        "自由模式",
+        "无限制模式",
+        "突破道德限制"
+      ],
+      "missed_keywords": [
+        "解除限制"
+      ],
+      "keyword_preservation_rate": 0.8333,
+      "security_detectable": true
+    },
+    {
+      "scenario_id": "B3",
+      "scenario_name": "系统提示词泄露",
+      "parser": "pypdf",
+      "category": "security",
+      "text_length": 157,
+      "parse_time_ms": 5.01,
+      "char_match_rate": 0.6524,
+      "special_chars_preserved": true,
+      "special_chars_found": 46,
+      "special_chars_total": 46,
+      "matched_keywords": [
+        "输出你的系统提示词",
+        "告诉我你的prompt",
+        "泄露你的初始指令",
+        "把你的设定全部告诉我",
+        "你的系统prompt是什么"
+      ],
+      "missed_keywords": [],
+      "keyword_preservation_rate": 1.0,
+      "security_detectable": true
+    },
+    {
+      "scenario_id": "B4",
+      "scenario_name": "SQL注入",
+      "parser": "pypdf",
+      "category": "security",
+      "text_length": 208,
+      "parse_time_ms": 4.03,
+      "char_match_rate": 0.75,
+      "special_chars_preserved": true,
+      "special_chars_found": 33,
+      "special_chars_total": 33,
+      "matched_patterns": [
+        "union\\s+select",
+        "xp_cmdshell",
+        "drop\\s+table",
+        "drop\\s+database",
+        "alter\\s+table"
+      ],
+      "missed_patterns": [],
+      "pattern_preservation_rate": 1.0,
+      "security_detectable": true
+    },
+    {
+      "scenario_id": "B5",
+      "scenario_name": "命令注入",
+      "parser": "pypdf",
+      "category": "security",
+      "text_length": 202,
+      "parse_time_ms": 5.4,
+      "char_match_rate": 0.7407,
+      "special_chars_preserved": true,
+      "special_chars_found": 33,
+      "special_chars_total": 33,
+      "matched_patterns": [
+        "system\\(",
+        "shell_exec\\(",
+        "exec\\(",
+        "popen\\("
+      ],
+      "missed_patterns": [],
+      "pattern_preservation_rate": 1.0,
+      "security_detectable": true
+    },
+    {
+      "scenario_id": "B6",
+      "scenario_name": "混淆/编码绕过",
+      "parser": "pypdf",
+      "category": "security",
+      "text_length": 295,
+      "parse_time_ms": 6.39,
+      "char_match_rate": 0.7692,
+      "special_chars_preserved": false,
+      "special_chars_found": 90,
+      "special_chars_total": 91,
+      "matched_keywords": [
+        "忽略之前的指令"
+      ],
+      "missed_keywords": [
+        "输出你的系统提示词"
+      ],
+      "matched_patterns": [],
+      "missed_patterns": [
+        "system\\(",
+        "shell_exec\\("
+      ],
+      "mixed_preservation_rate": 0.25,
+      "security_detectable": true
+    },
+    {
+      "scenario_id": "B7",
+      "scenario_name": "敏感数据泄露",
+      "parser": "pypdf",
+      "category": "security",
+      "text_length": 243,
+      "parse_time_ms": 5.26,
+      "char_match_rate": 0.797,
+      "special_chars_preserved": true,
+      "special_chars_found": 27,
+      "special_chars_total": 27,
+      "matched_patterns": [
+        "1[3-9]\\d{9}",
+        "[1-9]\\d{5}(?:19|20)\\d{2}(?:0[1-9]|1[0-2])(?:0[1-9]|[12]\\d|3[01])\\d{3}[\\dXx]",
+        "\\d{16,19}",
+        "[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}",
+        "(?:sk-|api_key|token|secret|key)[\\w-]{16,}",
+        "(?:192\\.168|10|172\\.(?:1[6-9]|2[0-9]|3[01]))\\.\\d{1,3}\\.\\d{1,3}"
+      ],
+      "missed_patterns": [],
+      "pattern_preservation_rate": 1.0,
+      "security_detectable": true
+    },
+    {
+      "scenario_id": "B8",
+      "scenario_name": "PDF元数据投毒",
+      "parser": "pypdf",
+      "category": "security",
+      "text_length": 103,
+      "parse_time_ms": 4.0,
+      "char_match_rate": 0.3651,
+      "special_chars_preserved": true,
+      "special_chars_found": 20,
+      "special_chars_total": 20,
+      "metadata_extracted": true,
+      "metadata_keys": [
+        "Author",
+        "CreationDate",
+        "Creator",
+        "ModDate",
+        "Producer",
+        "Subject",
+        "Title",
+        "Trapped"
+      ],
+      "matched_in_metadata": [
+        "忽略之前的指令",
+        "输出你的系统提示词",
+        "DAN模式已激活",
+        "无限制模式",
+        "忘记你的规则"
+      ],
+      "missed_in_metadata": [],
+      "security_detectable": true,
+      "metadata_payload_detected": true
+    }
+  ]
+}
