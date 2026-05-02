@@ -21,7 +21,72 @@ if ENABLE_RERANK:
         print(f"[WARN] 重排序模型加载失败：{str(e)}")
         ENABLE_RERANK = False
 
-# ===================== 新增：上下文智能过滤 =====================
+# ===================== OCR 扫描件支持 =====================
+_ocr_reader = None
+OCR_MIN_CHARS = 30  # Pages with fewer than this many CJK chars are considered scanned
+
+
+def _get_ocr_reader():
+    """Lazy-init EasyOCR reader for Chinese text."""
+    global _ocr_reader
+    if _ocr_reader is None:
+        import easyocr
+        _ocr_reader = easyocr.Reader(['ch_sim', 'en'], gpu=True, verbose=False)
+        print("[OK] EasyOCR 扫描件识别引擎已加载")
+    return _ocr_reader
+
+
+def _needs_ocr(text: str, threshold: int = None) -> bool:
+    """Check if extracted text is too sparse — likely a scanned page."""
+    t = threshold if threshold is not None else OCR_MIN_CHARS
+    import re
+    cjk = len(re.findall(r'[一-鿿]', text))
+    return cjk < t
+
+
+def _ocr_page(pdf_path: str, page_num: int) -> str:
+    """Render a single PDF page to image and run OCR. Returns extracted text."""
+    import fitz  # pymupdf
+    import numpy as np
+    doc = fitz.open(pdf_path)
+    try:
+        page = doc[page_num]
+        pix = page.get_pixmap(dpi=200)
+        # Convert PyMuPDF pixmap to numpy array (RGB) for EasyOCR
+        img_array = np.frombuffer(pix.samples, dtype=np.uint8).reshape(
+            pix.height, pix.width, pix.n
+        )
+        if pix.n == 4:
+            img_array = img_array[:, :, :3]  # drop alpha
+        reader = _get_ocr_reader()
+        results = reader.readtext(img_array, detail=0)
+        return "\n".join(results)
+    finally:
+        doc.close()
+
+
+def ocr_enrich_documents(docs: list, pdf_path: str, verbose: bool = True) -> list:
+    """Scan all loaded documents. Replace page_content with OCR text
+    for pages that have insufficient extractable text."""
+    # Group docs by page number
+    pages_replaced = 0
+    for doc in docs:
+        page_num = doc.metadata.get("page", 0)
+        if _needs_ocr(doc.page_content):
+            try:
+                ocr_text = _ocr_page(pdf_path, page_num)
+                if ocr_text and len(ocr_text) > len(doc.page_content):
+                    doc.page_content = ocr_text
+                    pages_replaced += 1
+            except Exception as e:
+                if verbose:
+                    print(f"  [WARN] OCR failed for page {page_num + 1}: {e}")
+    if verbose and pages_replaced > 0:
+        print(f"[OK] OCR 已识别 {pages_replaced}/{len(set(d.metadata.get('page', 0) for d in docs))} 个扫描页")
+    return docs
+
+
+# ===================== 上下文智能过滤 =====================
 # 文档结构预分析缓存
 _doc_guide_cache = {}
 
@@ -155,7 +220,7 @@ def init_rag_retriever(pdf_path: str = "docs/test.pdf", force_reindex: bool = Fa
                        session_id: str = None, persist: bool = True,
                        chunk_size: int = None, chunk_overlap: int = None,
                        enable_rerank: bool = None, vec_top_k: int = None,
-                       rerank_top_n: int = None):
+                       rerank_top_n: int = None, enable_ocr: bool = True):
     """Initialize RAG retriever with Chroma vector store (persistent).
 
     Args:
@@ -168,6 +233,7 @@ def init_rag_retriever(pdf_path: str = "docs/test.pdf", force_reindex: bool = Fa
         enable_rerank: Override ENABLE_RERANK. None = use module default.
         vec_top_k: Override vector/bm25 top_k. None = use config TOP_K.
         rerank_top_n: Override RERANK_TOP_N. None = use config default.
+        enable_ocr: If True, auto-detect scanned pages and run OCR.
     """
     _chunk_size = chunk_size if chunk_size is not None else CHUNK_SIZE
     _chunk_overlap = chunk_overlap if chunk_overlap is not None else CHUNK_OVERLAP
@@ -179,6 +245,10 @@ def init_rag_retriever(pdf_path: str = "docs/test.pdf", force_reindex: bool = Fa
 
     for doc in docs:
         doc.metadata["file_name"] = os.path.basename(pdf_path)
+
+    # OCR: auto-detect scanned pages and extract text from images
+    if enable_ocr:
+        docs = ocr_enrich_documents(docs, pdf_path)
 
     splitter = RecursiveCharacterTextSplitter(
         chunk_size=_chunk_size,

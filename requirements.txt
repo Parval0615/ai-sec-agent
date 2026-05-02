@@ -13,3 +13,6 @@ pymupdf
 pypdf
 langgraph
 langgraph-checkpoint-sqlite
+easyocr
+numpy
+Pillow

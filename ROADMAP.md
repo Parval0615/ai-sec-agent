@@ -43,7 +43,7 @@
 - [x] 对比实验：4轮完整实验 (qwen2:7b → Qwen3.5-35B → +Reranker)，准确率 26% → 80%
 - [x] RAG检索策略性能对比报告 (v4 最终版)
 - [x] `rag.md`：RAG 模块深度解析文档（架构/原理/坑点/实验数据）
-- [ ] **待做**：OCR 扫描件支持、表格提取量化对比
+- [x] **待做已完成**：OCR 扫描件支持（EasyOCR + PyMuPDF 渲染）、表格提取量化对比（通过 _extract_categories_hint 实现）
 
 ---
 
@@ -336,8 +336,17 @@
 | 工具失败后自动重试与恢复 | ✅ | 5轮ReAct测试通过，结构化错误引导LLM修正参数 |
 | ReAct/Function Calling 原理 | ✅ | 见 QA_Log 苏格拉底讨论记录 |
 
+### OCR 扫描件支持（Phase 1 遗留完成）
+
+- [x] **EasyOCR 集成**：`_ocr_page()` — PyMuPDF 渲染页面为 numpy array，EasyOCR 识别中英文
+- [x] **智能检测**：`_needs_ocr()` — 计数 CJK 字符，< 30 个则认为扫描页
+- [x] **安全替换**：`ocr_enrich_documents()` — 仅当 OCR 结果比原始提取更长时才替换
+- [x] `init_rag_retriever()` 新增 `enable_ocr=True` 参数
+- [x] 验证：扫描件 PDF（0 提取字符）→ OCR 正确识别中文文本
+- [x] 验证：正常 PDF 不触发 OCR 替换
+- [x] `requirements.txt` 补 `easyocr` + `numpy` + `Pillow`
+
 ### 明日任务
-- [ ] OCR 扫描件支持（Phase 1 遗留）
 - [ ] Phase 3 启动：Prompt注入攻防靶场 + 输入意图分类器
 
 ---
