@@ -143,8 +143,13 @@ Rules:
 - Use tools when the user asks for scanning, detection, or document search
 - When the user asks for MULTIPLE independent tasks at once (e.g. scan a URL AND check SQL injection), call all relevant tools simultaneously in one response
 - If the user asks something unrelated to your tools, answer directly
-- If a tool fails, try to fix the parameters and retry once. If it fails again, explain the issue to the user
-- Be concise and professional"""
+- Be concise and professional
+
+Self-healing on tool errors:
+- If a tool returns [TOOL_ERROR], read the Error, Hint, and Called-with fields
+- Fix the obvious issue yourself: missing http:// prefix, empty parameter, wrong argument name, etc.
+- Retry with the fixed parameters. If it fails again, explain the issue to the user
+- If the fix isn't obvious from the error, explain to the user what's needed"""
 
     full_messages = [SystemMessage(content=system_prompt)] + list(state["messages"])
 
@@ -224,6 +229,29 @@ def route_after_agent(state: AgentState) -> str:
     return "output_filter"
 
 
+def _format_tool_error(tool_name: str, args: dict, error: Exception) -> str:
+    """Build a structured error message that helps the LLM self-heal."""
+    import json as _json
+    err_type = type(error).__name__
+    err_str = str(error)
+
+    hints = {
+        "simple_vuln_scan": "Check that 'url' starts with http:// or https:// and contains a valid domain.",
+        "check_sql_injection": "Ensure 'content' is a non-empty string with SQL-like patterns.",
+        "check_sensitive_information": "Ensure 'text' is provided as a non-empty string.",
+        "search_document": "Make sure a PDF document has been uploaded first. The query should be a clear question.",
+    }
+
+    hint = hints.get(tool_name, "Check the parameter types and try again.")
+    return (
+        f"[TOOL_ERROR] Tool '{tool_name}' failed.\n"
+        f"Error: {err_type}: {err_str}\n"
+        f"Called with: {_json.dumps(args, ensure_ascii=False)}\n"
+        f"Hint: {hint}\n"
+        f"Please fix the parameters and call the tool again."
+    )
+
+
 def tool_node(state: AgentState) -> dict:
     messages = state["messages"]
     last_msg = messages[-1]
@@ -252,7 +280,7 @@ def tool_node(state: AgentState) -> dict:
                 content_str = _summarize_tool_result(tool_name, content_str)
             tool_messages.append(ToolMessage(content=content_str, tool_call_id=tc["id"]))
         except Exception as e:
-            error_msg = f"[ERROR] {type(e).__name__}: {str(e)}. Try different parameters."
+            error_msg = _format_tool_error(tool_name, tool_args, e)
             tool_messages.append(ToolMessage(content=error_msg, tool_call_id=tc["id"]))
 
     return {"messages": tool_messages, "tool_call_count": count}
@@ -308,6 +336,26 @@ def clear_history(thread_id: str) -> bool:
         return True
     except Exception:
         return False
+
+
+def get_thread_messages(thread_id: str) -> list:
+    """Return UI-friendly message dicts from checkpointed thread state.
+    Returns [{"role": "user"|"assistant", "content": "..."}, ...]"""
+    graph = _get_graph()
+    config = {"configurable": {"thread_id": thread_id}}
+    saved = graph.get_state(config)
+    if not saved or not saved.values:
+        return []
+    messages = saved.values.get("messages", [])
+    result = []
+    for m in messages:
+        if hasattr(m, 'tool_calls') and m.tool_calls:
+            continue  # skip intermediate tool-call messages
+        if isinstance(m, HumanMessage):
+            result.append({"role": "user", "content": m.content})
+        elif isinstance(m, AIMessage):
+            result.append({"role": "assistant", "content": m.content})
+    return result
 
 
 FORGET_PATTERN = re.compile(r"(?:忘掉|忘记|forget|删除.*(?:记录|记忆|对话))[：:\s]*(.+)", re.IGNORECASE)
