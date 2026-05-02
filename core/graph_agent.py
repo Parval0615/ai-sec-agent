@@ -7,10 +7,13 @@ Architecture:
 
 import contextvars
 import operator
+import os
 import re
+import sqlite3
 from typing import Annotated, Optional, TypedDict
 from langgraph.graph import StateGraph, START, END
 from langgraph.graph.message import add_messages
+from langgraph.checkpoint.sqlite import SqliteSaver
 
 from langchain_core.messages import HumanMessage, AIMessage, SystemMessage, BaseMessage, ToolMessage
 from langchain_core.tools import tool
@@ -75,6 +78,23 @@ class AgentState(TypedDict):
 
 RETRY_LIMIT = 3
 MAX_TOOL_RESULT = 2000
+
+
+def _summarize_tool_result(tool_name: str, full_content: str) -> str:
+    """Summarize long tool output via LLM instead of blind truncation."""
+    prompt = f"""Summarize this tool output concisely. Keep ALL specific data (numbers, URLs, IPs, names, findings, risk levels, file paths). Only remove redundancy. Output in Chinese, ~600 chars max.
+
+Tool: {tool_name}
+Output ({len(full_content)} chars):
+{full_content[:4000]}
+
+Concise summary:"""
+
+    try:
+        response = llm.invoke(prompt)
+        return response.content.strip() if hasattr(response, 'content') else full_content[:MAX_TOOL_RESULT] + "..."
+    except Exception:
+        return full_content[:MAX_TOOL_RESULT] + f"\n...[truncated, {len(full_content)} chars total]"
 
 
 def guardrail_node(state: AgentState) -> dict:
@@ -229,7 +249,7 @@ def tool_node(state: AgentState) -> dict:
             result = tool_fn.invoke(tool_args)
             content_str = str(result)
             if len(content_str) > MAX_TOOL_RESULT:
-                content_str = content_str[:MAX_TOOL_RESULT] + f"\n...[truncated, {len(result)} chars total]"
+                content_str = _summarize_tool_result(tool_name, content_str)
             tool_messages.append(ToolMessage(content=content_str, tool_call_id=tc["id"]))
         except Exception as e:
             error_msg = f"[ERROR] {type(e).__name__}: {str(e)}. Try different parameters."
@@ -238,7 +258,7 @@ def tool_node(state: AgentState) -> dict:
     return {"messages": tool_messages, "tool_call_count": count}
 
 
-def _build_graph():
+def _build_graph(checkpointer=None):
     builder = StateGraph(AgentState)
 
     builder.add_node("guardrail", guardrail_node)
@@ -260,10 +280,34 @@ def _build_graph():
     builder.add_edge("output_filter", "finalize")
     builder.add_edge("finalize", END)
 
-    return builder.compile()
+    return builder.compile(checkpointer=checkpointer)
 
 
-_graph = _build_graph()
+_graph = None
+_checkpointer = None
+
+
+def _get_graph():
+    global _graph, _checkpointer
+    if _graph is None:
+        os.makedirs("checkpoints", exist_ok=True)
+        conn = sqlite3.connect("checkpoints/graph_state.db", check_same_thread=False)
+        _checkpointer = SqliteSaver(conn)
+        _graph = _build_graph(checkpointer=_checkpointer)
+    return _graph
+
+
+def clear_history(thread_id: str) -> bool:
+    """Delete checkpoint state for a given thread_id."""
+    global _checkpointer
+    _get_graph()  # ensure initialized
+    if _checkpointer is None:
+        return False
+    try:
+        _checkpointer.delete_thread(thread_id)
+        return True
+    except Exception:
+        return False
 
 
 FORGET_PATTERN = re.compile(r"(?:忘掉|忘记|forget|删除.*(?:记录|记忆|对话))[：:\s]*(.+)", re.IGNORECASE)
@@ -303,45 +347,72 @@ def graph_invoke(
     user_id: str = "default",
     chat_history: Optional[list] = None,
     max_history: int = 20,
+    thread_id: str = None,
 ) -> str:
     _current_retriever.set(retriever)
+    graph = _get_graph()
 
-    history = list(chat_history) if chat_history else []
+    # When chat_history is provided (Streamlit), caller manages state.
+    # Use a unique per-call thread_id to avoid merging with prior checkpoint.
+    # When chat_history is None (CLI), rely entirely on checkpointer.
+    has_caller_history = chat_history is not None
+    if has_caller_history:
+        history = list(chat_history)
+        tid = f"{thread_id or user_id}_{hash(tuple())}"  # unique per call
+        saved_summary = ""
+        # Each call gets a fresh checkpoint ID to avoid message duplication
+        import uuid
+        tid = f"{thread_id or user_id}_{uuid.uuid4().hex[:8]}"
+    else:
+        history = []
+        tid = thread_id or user_id
+        saved = graph.get_state({"configurable": {"thread_id": tid}})
+        if saved and saved.values:
+            history = list(saved.values.get("messages", []))
+            saved_summary = saved.values.get("conversation_summary", "")
+        else:
+            saved_summary = ""
+
+    config = {"configurable": {"thread_id": tid, "user_id": user_id}}
 
     # Precise forgetting: user says "forget X" -> remove matching messages
     forget_match = FORGET_PATTERN.search(user_input)
     if forget_match:
         target = forget_match.group(1).strip()
-        # Split target into tokens and match any token >= 4 chars (catches IPs, names, URLs)
         tokens = [t for t in re.split(r'[\s,，。]+', target) if len(t) >= 4]
-        tokens.append(target)  # Also try full target
+        tokens.append(target)
         new_history = []
         for m in history:
             content = m.content if hasattr(m, 'content') else str(m)
             if any(t in content for t in tokens):
-                continue  # skip this message
+                continue
             new_history.append(m)
         removed = len(history) - len(new_history)
-        if chat_history is not None:
+        if has_caller_history:
             chat_history.clear()
             chat_history.extend(new_history)
         return f"已遗忘 {removed} 条与「{target}」相关的对话记录。"
 
     # Summary generation: compress old messages when exceeding max_history
-    summary = ""
+    summary = saved_summary
     if len(history) > max_history:
         old = history[:-max_history]
         history = history[-max_history:]
         summary = _generate_summary(old)
-        # Update caller's chat_history to reflect trimming
-        if chat_history is not None:
+        if has_caller_history:
             chat_history.clear()
             chat_history.extend(history)
 
-    messages = history + [HumanMessage(content=user_input)]
+    # Build state messages:
+    # - Caller-managed: pass full history + new msg (no checkpoint merge risk with unique tid)
+    # - Checkpointer-managed: pass only new msg (add_messages appends to checkpoint)
+    if has_caller_history:
+        state_messages = history + [HumanMessage(content=user_input)]
+    else:
+        state_messages = [HumanMessage(content=user_input)]
 
     state = {
-        "messages": messages,
+        "messages": state_messages,
         "user_role": role,
         "security_blocked": False,
         "audit_entries": [],
@@ -349,8 +420,7 @@ def graph_invoke(
         "conversation_summary": summary,
     }
 
-    config = {"configurable": {"user_id": user_id}}
-    result = _graph.invoke(state, config)
+    result = graph.invoke(state, config)
 
     result_messages = result["messages"]
     for m in reversed(result_messages):

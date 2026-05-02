@@ -12,3 +12,4 @@ reportlab
 pymupdf
 pypdf
 langgraph
+langgraph-checkpoint-sqlite

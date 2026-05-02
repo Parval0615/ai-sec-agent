@@ -2,10 +2,9 @@ import warnings
 warnings.filterwarnings("ignore")
 import os
 os.environ["HF_HUB_DISABLE_SYMLINKS_WARNING"] = "1"
-from core.graph_agent import graph_invoke
+from core.graph_agent import graph_invoke, clear_history
 from security.permission import ROLE_PERMISSIONS, get_role_info, DEFAULT_ROLE
 from security.audit_log import read_audit_log
-from langchain_core.messages import HumanMessage, AIMessage
 
 if __name__ == "__main__":
     print("="*70)
@@ -16,7 +15,6 @@ if __name__ == "__main__":
 
     current_role = DEFAULT_ROLE
     current_user_id = "cli_user"
-    chat_history = []
 
     while True:
         user_input = input("\n请输入问题：").strip()
@@ -26,8 +24,8 @@ if __name__ == "__main__":
             break
         # 清空记忆
         if user_input.lower() == "clear":
-            chat_history.clear()
-            print("[OK] 对话记忆已清空")
+            clear_history(current_user_id)
+            print("[OK] 对话记忆已清空（SQLite 持久化状态已重置）")
             continue
         # 切换角色
         if user_input.lower() == "role":
@@ -37,7 +35,7 @@ if __name__ == "__main__":
             new_role = input("请输入角色代码：").strip().lower()
             if new_role in ROLE_PERMISSIONS:
                 current_role = new_role
-                chat_history.clear()
+                clear_history(current_user_id)
                 print(f"[OK] 已切换为【{ROLE_PERMISSIONS[current_role]['name']}】，记忆已清空")
             else:
                 print("[X] 无效角色代码")
@@ -54,17 +52,13 @@ if __name__ == "__main__":
             print("请输入有效问题")
             continue
 
-        # 调用Agent
+        # 调用Agent（不传 chat_history，纯 checkpointer 模式）
         try:
             answer = graph_invoke(
                 user_input=user_input,
                 role=current_role,
                 user_id=current_user_id,
-                chat_history=chat_history,
             )
             print("\n【Agent回答】：", answer)
-            # Update history
-            chat_history.append(HumanMessage(content=user_input))
-            chat_history.append(AIMessage(content=answer))
         except Exception as e:
             print("\n【系统错误】：", str(e))
