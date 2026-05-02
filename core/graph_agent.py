@@ -36,14 +36,20 @@ _current_retriever: contextvars.ContextVar = contextvars.ContextVar('current_ret
 @tool
 def search_document(query: str) -> str:
     """Search the uploaded PDF document for information. Use when the user asks
-    about document content, policies, rules, or specific topics in the uploaded file."""
+    about document content, policies, rules, or specific topics in the uploaded file.
+    If no results found, try different keywords — shorter queries, synonyms,
+    or terms that are more likely to appear in the document."""
     retriever = _current_retriever.get()
     if not retriever or not retriever.get("docs"):
-        return "No document is currently loaded. Ask the user to upload a PDF first."
+        return "[SEARCH_FAIL] No document is currently loaded. Ask the user to upload a PDF first."
 
     context, source_docs = rag_query(retriever, query)
     if not source_docs or "未找到" in context:
-        return "No relevant content found in the document for this query."
+        return (
+            f"[SEARCH_RETRY] No results for '{query[:100]}'. "
+            f"Try: (1) shorter keywords (2) synonyms (3) terms that likely appear in the document. "
+            f"Call search_document again with a different query."
+        )
 
     result = context
     if source_docs:
@@ -144,6 +150,11 @@ Rules:
 - When the user asks for MULTIPLE independent tasks at once (e.g. scan a URL AND check SQL injection), call all relevant tools simultaneously in one response
 - If the user asks something unrelated to your tools, answer directly
 - Be concise and professional
+
+Keyword retry for document search:
+- If search_document returns [SEARCH_RETRY], reformulate the query: use shorter keywords, try synonyms, or guess terms likely in the document
+- Call search_document again with the new query. Up to 2 retries
+- Only tell the user "not found" after 2 search attempts with different keywords
 
 Self-healing on tool errors:
 - If a tool returns [TOOL_ERROR], read the Error, Hint, and Called-with fields
