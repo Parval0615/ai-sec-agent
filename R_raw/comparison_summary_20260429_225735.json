@@ -1,0 +1,2661 @@
+{
+  "test_date": "20260429_225735",
+  "pdf_path": "docs/test.pdf",
+  "test_case_count": 12,
+  "experiment_groups": {
+    "A_chunk_size": [
+      {
+        "label": "A1: chunk=400 overlap=75",
+        "test_count": 12,
+        "pass_count": 2,
+        "pass_rate": 0.1667,
+        "avg_recall": 1.0,
+        "avg_precision": 0.3056,
+        "avg_accuracy": 0.5125,
+        "avg_hallucination_rate": 0.5297,
+        "avg_response_time_ms": 4455.98,
+        "detailed_results": [
+          {
+            "query": "投诉类型有哪几种？",
+            "expected_keywords": [
+              "答案问题",
+              "内容违规",
+              "服务问题",
+              "其他"
+            ],
+            "found_keywords": [
+              "答案问题",
+              "内容违规",
+              "服务问题",
+              "其他"
+            ],
+            "recall": 1.0,
+            "precision": 0.3333,
+            "accuracy": 0.75,
+            "hallucination_rate": 0.5694,
+            "response_time_ms": 9038.56,
+            "pass": false
+          },
+          {
+            "query": "处理状态有哪些？",
+            "expected_keywords": [
+              "已处理",
+              "未处理"
+            ],
+            "found_keywords": [
+              "已处理",
+              "未处理"
+            ],
+            "recall": 1.0,
+            "precision": 0.3333,
+            "accuracy": 1.0,
+            "hallucination_rate": 0.6111,
+            "response_time_ms": 3252.53,
+            "pass": true
+          },
+          {
+            "query": "一共有多少条投诉记录？",
+            "expected_keywords": [
+              "10"
+            ],
+            "found_keywords": [
+              "10"
+            ],
+            "recall": 1.0,
+            "precision": 0.3333,
+            "accuracy": 0.0,
+            "hallucination_rate": 0.5726,
+            "response_time_ms": 2855.08,
+            "pass": false
+          },
+          {
+            "query": "有多少条投诉是已处理的？",
+            "expected_keywords": [
+              "已处理",
+              "6"
+            ],
+            "found_keywords": [
+              "已处理",
+              "6"
+            ],
+            "recall": 1.0,
+            "precision": 0.6667,
+            "accuracy": 0.5,
+            "hallucination_rate": 0.5864,
+            "response_time_ms": 4603.45,
+            "pass": false
+          },
+          {
+            "query": "有多少条投诉是未处理的？",
+            "expected_keywords": [
+              "未处理",
+              "4"
+            ],
+            "found_keywords": [
+              "未处理",
+              "4"
+            ],
+            "recall": 1.0,
+            "precision": 0.3333,
+            "accuracy": 1.0,
+            "hallucination_rate": 0.292,
+            "response_time_ms": 4880.42,
+            "pass": true
+          },
+          {
+            "query": "内容违规类型的投诉有哪些？",
+            "expected_keywords": [
+              "内容违规",
+              "不适当引导",
+              "暴力",
+              "恐怖",
+              "敏感人物"
+            ],
+            "found_keywords": [
+              "内容违规",
+              "不适当引导",
+              "暴力",
+              "恐怖",
+              "敏感人物"
+            ],
+            "recall": 1.0,
+            "precision": 0.3333,
+            "accuracy": 0.4,
+            "hallucination_rate": 0.4368,
+            "response_time_ms": 4554.7,
+            "pass": false
+          },
+          {
+            "query": "服务问题类型的投诉有哪些？",
+            "expected_keywords": [
+              "服务问题",
+              "报错",
+              "卡顿",
+              "账号"
+            ],
+            "found_keywords": [
+              "服务问题",
+              "报错",
+              "卡顿",
+              "账号"
+            ],
+            "recall": 1.0,
+            "precision": 0.0,
+            "accuracy": 0.25,
+            "hallucination_rate": 0.6216,
+            "response_time_ms": 5279.73,
+            "pass": false
+          },
+          {
+            "query": "用户ID为2的投诉内容是什么？",
+            "expected_keywords": [
+              "2",
+              "不相关",
+              "逻辑混乱",
+              "不适当引导"
+            ],
+            "found_keywords": [
+              "2",
+              "不相关",
+              "逻辑混乱",
+              "不适当引导"
+            ],
+            "recall": 1.0,
+            "precision": 0.3333,
+            "accuracy": 0.5,
+            "hallucination_rate": 0.4143,
+            "response_time_ms": 2631.43,
+            "pass": false
+          },
+          {
+            "query": "2026年4月10日8点的投诉有哪些？",
+            "expected_keywords": [
+              "8:4",
+              "2",
+              "43"
+            ],
+            "found_keywords": [
+              "8:4",
+              "2",
+              "43"
+            ],
+            "recall": 1.0,
+            "precision": 0.3333,
+            "accuracy": 0.3333,
+            "hallucination_rate": 0.5259,
+            "response_time_ms": 6202.13,
+            "pass": false
+          },
+          {
+            "query": "用户43投诉了什么？",
+            "expected_keywords": [
+              "43",
+              "暴力",
+              "恐怖",
+              "报错"
+            ],
+            "found_keywords": [
+              "43",
+              "暴力",
+              "恐怖",
+              "报错"
+            ],
+            "recall": 1.0,
+            "precision": 0.0,
+            "accuracy": 0.25,
+            "hallucination_rate": 0.4557,
+            "response_time_ms": 3333.39,
+            "pass": false
+          },
+          {
+            "query": "文档中提到的第一个投诉是什么时间？",
+            "expected_keywords": [
+              "2026",
+              "8:46"
+            ],
+            "found_keywords": [
+              "2026",
+              "8:46"
+            ],
+            "recall": 1.0,
+            "precision": 0.3333,
+            "accuracy": 0.5,
+            "hallucination_rate": 0.6013,
+            "response_time_ms": 3116.96,
+            "pass": false
+          },
+          {
+            "query": "关于专业知识的投诉是什么？",
+            "expected_keywords": [
+              "36",
+              "专业知识",
+              "错误"
+            ],
+            "found_keywords": [
+              "36",
+              "专业知识",
+              "错误"
+            ],
+            "recall": 1.0,
+            "precision": 0.3333,
+            "accuracy": 0.6667,
+            "hallucination_rate": 0.6692,
+            "response_time_ms": 3723.37,
+            "pass": false
+          }
+        ]
+      },
+      {
+        "label": "A2: chunk=800 overlap=150 (default)",
+        "test_count": 12,
+        "pass_count": 2,
+        "pass_rate": 0.1667,
+        "avg_recall": 1.0,
+        "avg_precision": 0.3056,
+        "avg_accuracy": 0.5125,
+        "avg_hallucination_rate": 0.5307,
+        "avg_response_time_ms": 3942.51,
+        "detailed_results": [
+          {
+            "query": "投诉类型有哪几种？",
+            "expected_keywords": [
+              "答案问题",
+              "内容违规",
+              "服务问题",
+              "其他"
+            ],
+            "found_keywords": [
+              "答案问题",
+              "内容违规",
+              "服务问题",
+              "其他"
+            ],
+            "recall": 1.0,
+            "precision": 0.3333,
+            "accuracy": 0.75,
+            "hallucination_rate": 0.5814,
+            "response_time_ms": 3104.5,
+            "pass": false
+          },
+          {
+            "query": "处理状态有哪些？",
+            "expected_keywords": [
+              "已处理",
+              "未处理"
+            ],
+            "found_keywords": [
+              "已处理",
+              "未处理"
+            ],
+            "recall": 1.0,
+            "precision": 0.3333,
+            "accuracy": 1.0,
+            "hallucination_rate": 0.6111,
+            "response_time_ms": 3189.78,
+            "pass": true
+          },
+          {
+            "query": "一共有多少条投诉记录？",
+            "expected_keywords": [
+              "10"
+            ],
+            "found_keywords": [
+              "10"
+            ],
+            "recall": 1.0,
+            "precision": 0.3333,
+            "accuracy": 0.0,
+            "hallucination_rate": 0.5726,
+            "response_time_ms": 2810.86,
+            "pass": false
+          },
+          {
+            "query": "有多少条投诉是已处理的？",
+            "expected_keywords": [
+              "已处理",
+              "6"
+            ],
+            "found_keywords": [
+              "已处理",
+              "6"
+            ],
+            "recall": 1.0,
+            "precision": 0.6667,
+            "accuracy": 0.5,
+            "hallucination_rate": 0.5864,
+            "response_time_ms": 4559.52,
+            "pass": false
+          },
+          {
+            "query": "有多少条投诉是未处理的？",
+            "expected_keywords": [
+              "未处理",
+              "4"
+            ],
+            "found_keywords": [
+              "未处理",
+              "4"
+            ],
+            "recall": 1.0,
+            "precision": 0.3333,
+            "accuracy": 1.0,
+            "hallucination_rate": 0.292,
+            "response_time_ms": 4948.58,
+            "pass": true
+          },
+          {
+            "query": "内容违规类型的投诉有哪些？",
+            "expected_keywords": [
+              "内容违规",
+              "不适当引导",
+              "暴力",
+              "恐怖",
+              "敏感人物"
+            ],
+            "found_keywords": [
+              "内容违规",
+              "不适当引导",
+              "暴力",
+              "恐怖",
+              "敏感人物"
+            ],
+            "recall": 1.0,
+            "precision": 0.3333,
+            "accuracy": 0.4,
+            "hallucination_rate": 0.4368,
+            "response_time_ms": 4541.71,
+            "pass": false
+          },
+          {
+            "query": "服务问题类型的投诉有哪些？",
+            "expected_keywords": [
+              "服务问题",
+              "报错",
+              "卡顿",
+              "账号"
+            ],
+            "found_keywords": [
+              "服务问题",
+              "报错",
+              "卡顿",
+              "账号"
+            ],
+            "recall": 1.0,
+            "precision": 0.0,
+            "accuracy": 0.25,
+            "hallucination_rate": 0.6216,
+            "response_time_ms": 5319.28,
+            "pass": false
+          },
+          {
+            "query": "用户ID为2的投诉内容是什么？",
+            "expected_keywords": [
+              "2",
+              "不相关",
+              "逻辑混乱",
+              "不适当引导"
+            ],
+            "found_keywords": [
+              "2",
+              "不相关",
+              "逻辑混乱",
+              "不适当引导"
+            ],
+            "recall": 1.0,
+            "precision": 0.3333,
+            "accuracy": 0.5,
+            "hallucination_rate": 0.4143,
+            "response_time_ms": 2604.6,
+            "pass": false
+          },
+          {
+            "query": "2026年4月10日8点的投诉有哪些？",
+            "expected_keywords": [
+              "8:4",
+              "2",
+              "43"
+            ],
+            "found_keywords": [
+              "8:4",
+              "2",
+              "43"
+            ],
+            "recall": 1.0,
+            "precision": 0.3333,
+            "accuracy": 0.3333,
+            "hallucination_rate": 0.5259,
+            "response_time_ms": 6153.95,
+            "pass": false
+          },
+          {
+            "query": "用户43投诉了什么？",
+            "expected_keywords": [
+              "43",
+              "暴力",
+              "恐怖",
+              "报错"
+            ],
+            "found_keywords": [
+              "43",
+              "暴力",
+              "恐怖",
+              "报错"
+            ],
+            "recall": 1.0,
+            "precision": 0.0,
+            "accuracy": 0.25,
+            "hallucination_rate": 0.4557,
+            "response_time_ms": 3338.57,
+            "pass": false
+          },
+          {
+            "query": "文档中提到的第一个投诉是什么时间？",
+            "expected_keywords": [
+              "2026",
+              "8:46"
+            ],
+            "found_keywords": [
+              "2026",
+              "8:46"
+            ],
+            "recall": 1.0,
+            "precision": 0.3333,
+            "accuracy": 0.5,
+            "hallucination_rate": 0.6013,
+            "response_time_ms": 2995.57,
+            "pass": false
+          },
+          {
+            "query": "关于专业知识的投诉是什么？",
+            "expected_keywords": [
+              "36",
+              "专业知识",
+              "错误"
+            ],
+            "found_keywords": [
+              "36",
+              "专业知识",
+              "错误"
+            ],
+            "recall": 1.0,
+            "precision": 0.3333,
+            "accuracy": 0.6667,
+            "hallucination_rate": 0.6692,
+            "response_time_ms": 3743.15,
+            "pass": false
+          }
+        ]
+      },
+      {
+        "label": "A3: chunk=1200 overlap=200",
+        "test_count": 12,
+        "pass_count": 2,
+        "pass_rate": 0.1667,
+        "avg_recall": 1.0,
+        "avg_precision": 0.3056,
+        "avg_accuracy": 0.5125,
+        "avg_hallucination_rate": 0.5307,
+        "avg_response_time_ms": 4008.53,
+        "detailed_results": [
+          {
+            "query": "投诉类型有哪几种？",
+            "expected_keywords": [
+              "答案问题",
+              "内容违规",
+              "服务问题",
+              "其他"
+            ],
+            "found_keywords": [
+              "答案问题",
+              "内容违规",
+              "服务问题",
+              "其他"
+            ],
+            "recall": 1.0,
+            "precision": 0.3333,
+            "accuracy": 0.75,
+            "hallucination_rate": 0.5814,
+            "response_time_ms": 3129.34,
+            "pass": false
+          },
+          {
+            "query": "处理状态有哪些？",
+            "expected_keywords": [
+              "已处理",
+              "未处理"
+            ],
+            "found_keywords": [
+              "已处理",
+              "未处理"
+            ],
+            "recall": 1.0,
+            "precision": 0.3333,
+            "accuracy": 1.0,
+            "hallucination_rate": 0.6111,
+            "response_time_ms": 3224.47,
+            "pass": true
+          },
+          {
+            "query": "一共有多少条投诉记录？",
+            "expected_keywords": [
+              "10"
+            ],
+            "found_keywords": [
+              "10"
+            ],
+            "recall": 1.0,
+            "precision": 0.3333,
+            "accuracy": 0.0,
+            "hallucination_rate": 0.5726,
+            "response_time_ms": 2865.52,
+            "pass": false
+          },
+          {
+            "query": "有多少条投诉是已处理的？",
+            "expected_keywords": [
+              "已处理",
+              "6"
+            ],
+            "found_keywords": [
+              "已处理",
+              "6"
+            ],
+            "recall": 1.0,
+            "precision": 0.6667,
+            "accuracy": 0.5,
+            "hallucination_rate": 0.5864,
+            "response_time_ms": 4653.65,
+            "pass": false
+          },
+          {
+            "query": "有多少条投诉是未处理的？",
+            "expected_keywords": [
+              "未处理",
+              "4"
+            ],
+            "found_keywords": [
+              "未处理",
+              "4"
+            ],
+            "recall": 1.0,
+            "precision": 0.3333,
+            "accuracy": 1.0,
+            "hallucination_rate": 0.292,
+            "response_time_ms": 5065.51,
+            "pass": true
+          },
+          {
+            "query": "内容违规类型的投诉有哪些？",
+            "expected_keywords": [
+              "内容违规",
+              "不适当引导",
+              "暴力",
+              "恐怖",
+              "敏感人物"
+            ],
+            "found_keywords": [
+              "内容违规",
+              "不适当引导",
+              "暴力",
+              "恐怖",
+              "敏感人物"
+            ],
+            "recall": 1.0,
+            "precision": 0.3333,
+            "accuracy": 0.4,
+            "hallucination_rate": 0.4368,
+            "response_time_ms": 4715.89,
+            "pass": false
+          },
+          {
+            "query": "服务问题类型的投诉有哪些？",
+            "expected_keywords": [
+              "服务问题",
+              "报错",
+              "卡顿",
+              "账号"
+            ],
+            "found_keywords": [
+              "服务问题",
+              "报错",
+              "卡顿",
+              "账号"
+            ],
+            "recall": 1.0,
+            "precision": 0.0,
+            "accuracy": 0.25,
+            "hallucination_rate": 0.6216,
+            "response_time_ms": 5374.8,
+            "pass": false
+          },
+          {
+            "query": "用户ID为2的投诉内容是什么？",
+            "expected_keywords": [
+              "2",
+              "不相关",
+              "逻辑混乱",
+              "不适当引导"
+            ],
+            "found_keywords": [
+              "2",
+              "不相关",
+              "逻辑混乱",
+              "不适当引导"
+            ],
+            "recall": 1.0,
+            "precision": 0.3333,
+            "accuracy": 0.5,
+            "hallucination_rate": 0.4143,
+            "response_time_ms": 2608.74,
+            "pass": false
+          },
+          {
+            "query": "2026年4月10日8点的投诉有哪些？",
+            "expected_keywords": [
+              "8:4",
+              "2",
+              "43"
+            ],
+            "found_keywords": [
+              "8:4",
+              "2",
+              "43"
+            ],
+            "recall": 1.0,
+            "precision": 0.3333,
+            "accuracy": 0.3333,
+            "hallucination_rate": 0.5259,
+            "response_time_ms": 6338.72,
+            "pass": false
+          },
+          {
+            "query": "用户43投诉了什么？",
+            "expected_keywords": [
+              "43",
+              "暴力",
+              "恐怖",
+              "报错"
+            ],
+            "found_keywords": [
+              "43",
+              "暴力",
+              "恐怖",
+              "报错"
+            ],
+            "recall": 1.0,
+            "precision": 0.0,
+            "accuracy": 0.25,
+            "hallucination_rate": 0.4557,
+            "response_time_ms": 3321.94,
+            "pass": false
+          },
+          {
+            "query": "文档中提到的第一个投诉是什么时间？",
+            "expected_keywords": [
+              "2026",
+              "8:46"
+            ],
+            "found_keywords": [
+              "2026",
+              "8:46"
+            ],
+            "recall": 1.0,
+            "precision": 0.3333,
+            "accuracy": 0.5,
+            "hallucination_rate": 0.6013,
+            "response_time_ms": 3010.24,
+            "pass": false
+          },
+          {
+            "query": "关于专业知识的投诉是什么？",
+            "expected_keywords": [
+              "36",
+              "专业知识",
+              "错误"
+            ],
+            "found_keywords": [
+              "36",
+              "专业知识",
+              "错误"
+            ],
+            "recall": 1.0,
+            "precision": 0.3333,
+            "accuracy": 0.6667,
+            "hallucination_rate": 0.6692,
+            "response_time_ms": 3793.5,
+            "pass": false
+          }
+        ]
+      }
+    ],
+    "B_retrieval_strategy": [
+      {
+        "label": "B1: Vector-only (MMR)",
+        "test_count": 12,
+        "pass_count": 2,
+        "pass_rate": 0.1667,
+        "avg_recall": 1.0,
+        "avg_precision": 0.3056,
+        "avg_accuracy": 0.5125,
+        "avg_hallucination_rate": 0.5307,
+        "avg_response_time_ms": 3959.2,
+        "detailed_results": [
+          {
+            "query": "投诉类型有哪几种？",
+            "expected_keywords": [
+              "答案问题",
+              "内容违规",
+              "服务问题",
+              "其他"
+            ],
+            "found_keywords": [
+              "答案问题",
+              "内容违规",
+              "服务问题",
+              "其他"
+            ],
+            "recall": 1.0,
+            "precision": 0.3333,
+            "accuracy": 0.75,
+            "hallucination_rate": 0.5814,
+            "response_time_ms": 3164.34,
+            "pass": false
+          },
+          {
+            "query": "处理状态有哪些？",
+            "expected_keywords": [
+              "已处理",
+              "未处理"
+            ],
+            "found_keywords": [
+              "已处理",
+              "未处理"
+            ],
+            "recall": 1.0,
+            "precision": 0.3333,
+            "accuracy": 1.0,
+            "hallucination_rate": 0.6111,
+            "response_time_ms": 3256.64,
+            "pass": true
+          },
+          {
+            "query": "一共有多少条投诉记录？",
+            "expected_keywords": [
+              "10"
+            ],
+            "found_keywords": [
+              "10"
+            ],
+            "recall": 1.0,
+            "precision": 0.3333,
+            "accuracy": 0.0,
+            "hallucination_rate": 0.5726,
+            "response_time_ms": 2820.9,
+            "pass": false
+          },
+          {
+            "query": "有多少条投诉是已处理的？",
+            "expected_keywords": [
+              "已处理",
+              "6"
+            ],
+            "found_keywords": [
+              "已处理",
+              "6"
+            ],
+            "recall": 1.0,
+            "precision": 0.6667,
+            "accuracy": 0.5,
+            "hallucination_rate": 0.5864,
+            "response_time_ms": 4550.21,
+            "pass": false
+          },
+          {
+            "query": "有多少条投诉是未处理的？",
+            "expected_keywords": [
+              "未处理",
+              "4"
+            ],
+            "found_keywords": [
+              "未处理",
+              "4"
+            ],
+            "recall": 1.0,
+            "precision": 0.3333,
+            "accuracy": 1.0,
+            "hallucination_rate": 0.292,
+            "response_time_ms": 4867.89,
+            "pass": true
+          },
+          {
+            "query": "内容违规类型的投诉有哪些？",
+            "expected_keywords": [
+              "内容违规",
+              "不适当引导",
+              "暴力",
+              "恐怖",
+              "敏感人物"
+            ],
+            "found_keywords": [
+              "内容违规",
+              "不适当引导",
+              "暴力",
+              "恐怖",
+              "敏感人物"
+            ],
+            "recall": 1.0,
+            "precision": 0.3333,
+            "accuracy": 0.4,
+            "hallucination_rate": 0.4368,
+            "response_time_ms": 4507.41,
+            "pass": false
+          },
+          {
+            "query": "服务问题类型的投诉有哪些？",
+            "expected_keywords": [
+              "服务问题",
+              "报错",
+              "卡顿",
+              "账号"
+            ],
+            "found_keywords": [
+              "服务问题",
+              "报错",
+              "卡顿",
+              "账号"
+            ],
+            "recall": 1.0,
+            "precision": 0.0,
+            "accuracy": 0.25,
+            "hallucination_rate": 0.6216,
+            "response_time_ms": 5318.54,
+            "pass": false
+          },
+          {
+            "query": "用户ID为2的投诉内容是什么？",
+            "expected_keywords": [
+              "2",
+              "不相关",
+              "逻辑混乱",
+              "不适当引导"
+            ],
+            "found_keywords": [
+              "2",
+              "不相关",
+              "逻辑混乱",
+              "不适当引导"
+            ],
+            "recall": 1.0,
+            "precision": 0.3333,
+            "accuracy": 0.5,
+            "hallucination_rate": 0.4143,
+            "response_time_ms": 2632.67,
+            "pass": false
+          },
+          {
+            "query": "2026年4月10日8点的投诉有哪些？",
+            "expected_keywords": [
+              "8:4",
+              "2",
+              "43"
+            ],
+            "found_keywords": [
+              "8:4",
+              "2",
+              "43"
+            ],
+            "recall": 1.0,
+            "precision": 0.3333,
+            "accuracy": 0.3333,
+            "hallucination_rate": 0.5259,
+            "response_time_ms": 6297.34,
+            "pass": false
+          },
+          {
+            "query": "用户43投诉了什么？",
+            "expected_keywords": [
+              "43",
+              "暴力",
+              "恐怖",
+              "报错"
+            ],
+            "found_keywords": [
+              "43",
+              "暴力",
+              "恐怖",
+              "报错"
+            ],
+            "recall": 1.0,
+            "precision": 0.0,
+            "accuracy": 0.25,
+            "hallucination_rate": 0.4557,
+            "response_time_ms": 3375.07,
+            "pass": false
+          },
+          {
+            "query": "文档中提到的第一个投诉是什么时间？",
+            "expected_keywords": [
+              "2026",
+              "8:46"
+            ],
+            "found_keywords": [
+              "2026",
+              "8:46"
+            ],
+            "recall": 1.0,
+            "precision": 0.3333,
+            "accuracy": 0.5,
+            "hallucination_rate": 0.6013,
+            "response_time_ms": 3016.52,
+            "pass": false
+          },
+          {
+            "query": "关于专业知识的投诉是什么？",
+            "expected_keywords": [
+              "36",
+              "专业知识",
+              "错误"
+            ],
+            "found_keywords": [
+              "36",
+              "专业知识",
+              "错误"
+            ],
+            "recall": 1.0,
+            "precision": 0.3333,
+            "accuracy": 0.6667,
+            "hallucination_rate": 0.6692,
+            "response_time_ms": 3702.9,
+            "pass": false
+          }
+        ]
+      },
+      {
+        "label": "B2: BM25-only",
+        "test_count": 12,
+        "pass_count": 2,
+        "pass_rate": 0.1667,
+        "avg_recall": 1.0,
+        "avg_precision": 0.3056,
+        "avg_accuracy": 0.5125,
+        "avg_hallucination_rate": 0.5307,
+        "avg_response_time_ms": 3974.47,
+        "detailed_results": [
+          {
+            "query": "投诉类型有哪几种？",
+            "expected_keywords": [
+              "答案问题",
+              "内容违规",
+              "服务问题",
+              "其他"
+            ],
+            "found_keywords": [
+              "答案问题",
+              "内容违规",
+              "服务问题",
+              "其他"
+            ],
+            "recall": 1.0,
+            "precision": 0.3333,
+            "accuracy": 0.75,
+            "hallucination_rate": 0.5814,
+            "response_time_ms": 3167.9,
+            "pass": false
+          },
+          {
+            "query": "处理状态有哪些？",
+            "expected_keywords": [
+              "已处理",
+              "未处理"
+            ],
+            "found_keywords": [
+              "已处理",
+              "未处理"
+            ],
+            "recall": 1.0,
+            "precision": 0.3333,
+            "accuracy": 1.0,
+            "hallucination_rate": 0.6111,
+            "response_time_ms": 3160.37,
+            "pass": true
+          },
+          {
+            "query": "一共有多少条投诉记录？",
+            "expected_keywords": [
+              "10"
+            ],
+            "found_keywords": [
+              "10"
+            ],
+            "recall": 1.0,
+            "precision": 0.3333,
+            "accuracy": 0.0,
+            "hallucination_rate": 0.5726,
+            "response_time_ms": 2798.34,
+            "pass": false
+          },
+          {
+            "query": "有多少条投诉是已处理的？",
+            "expected_keywords": [
+              "已处理",
+              "6"
+            ],
+            "found_keywords": [
+              "已处理",
+              "6"
+            ],
+            "recall": 1.0,
+            "precision": 0.6667,
+            "accuracy": 0.5,
+            "hallucination_rate": 0.5864,
+            "response_time_ms": 4603.37,
+            "pass": false
+          },
+          {
+            "query": "有多少条投诉是未处理的？",
+            "expected_keywords": [
+              "未处理",
+              "4"
+            ],
+            "found_keywords": [
+              "未处理",
+              "4"
+            ],
+            "recall": 1.0,
+            "precision": 0.3333,
+            "accuracy": 1.0,
+            "hallucination_rate": 0.292,
+            "response_time_ms": 4907.85,
+            "pass": true
+          },
+          {
+            "query": "内容违规类型的投诉有哪些？",
+            "expected_keywords": [
+              "内容违规",
+              "不适当引导",
+              "暴力",
+              "恐怖",
+              "敏感人物"
+            ],
+            "found_keywords": [
+              "内容违规",
+              "不适当引导",
+              "暴力",
+              "恐怖",
+              "敏感人物"
+            ],
+            "recall": 1.0,
+            "precision": 0.3333,
+            "accuracy": 0.4,
+            "hallucination_rate": 0.4368,
+            "response_time_ms": 4576.96,
+            "pass": false
+          },
+          {
+            "query": "服务问题类型的投诉有哪些？",
+            "expected_keywords": [
+              "服务问题",
+              "报错",
+              "卡顿",
+              "账号"
+            ],
+            "found_keywords": [
+              "服务问题",
+              "报错",
+              "卡顿",
+              "账号"
+            ],
+            "recall": 1.0,
+            "precision": 0.0,
+            "accuracy": 0.25,
+            "hallucination_rate": 0.6216,
+            "response_time_ms": 5349.95,
+            "pass": false
+          },
+          {
+            "query": "用户ID为2的投诉内容是什么？",
+            "expected_keywords": [
+              "2",
+              "不相关",
+              "逻辑混乱",
+              "不适当引导"
+            ],
+            "found_keywords": [
+              "2",
+              "不相关",
+              "逻辑混乱",
+              "不适当引导"
+            ],
+            "recall": 1.0,
+            "precision": 0.3333,
+            "accuracy": 0.5,
+            "hallucination_rate": 0.4143,
+            "response_time_ms": 2631.91,
+            "pass": false
+          },
+          {
+            "query": "2026年4月10日8点的投诉有哪些？",
+            "expected_keywords": [
+              "8:4",
+              "2",
+              "43"
+            ],
+            "found_keywords": [
+              "8:4",
+              "2",
+              "43"
+            ],
+            "recall": 1.0,
+            "precision": 0.3333,
+            "accuracy": 0.3333,
+            "hallucination_rate": 0.5259,
+            "response_time_ms": 6300.79,
+            "pass": false
+          },
+          {
+            "query": "用户43投诉了什么？",
+            "expected_keywords": [
+              "43",
+              "暴力",
+              "恐怖",
+              "报错"
+            ],
+            "found_keywords": [
+              "43",
+              "暴力",
+              "恐怖",
+              "报错"
+            ],
+            "recall": 1.0,
+            "precision": 0.0,
+            "accuracy": 0.25,
+            "hallucination_rate": 0.4557,
+            "response_time_ms": 3307.95,
+            "pass": false
+          },
+          {
+            "query": "文档中提到的第一个投诉是什么时间？",
+            "expected_keywords": [
+              "2026",
+              "8:46"
+            ],
+            "found_keywords": [
+              "2026",
+              "8:46"
+            ],
+            "recall": 1.0,
+            "precision": 0.3333,
+            "accuracy": 0.5,
+            "hallucination_rate": 0.6013,
+            "response_time_ms": 3084.97,
+            "pass": false
+          },
+          {
+            "query": "关于专业知识的投诉是什么？",
+            "expected_keywords": [
+              "36",
+              "专业知识",
+              "错误"
+            ],
+            "found_keywords": [
+              "36",
+              "专业知识",
+              "错误"
+            ],
+            "recall": 1.0,
+            "precision": 0.3333,
+            "accuracy": 0.6667,
+            "hallucination_rate": 0.6692,
+            "response_time_ms": 3803.29,
+            "pass": false
+          }
+        ]
+      },
+      {
+        "label": "B3: Hybrid RRF (no rerank)",
+        "test_count": 12,
+        "pass_count": 2,
+        "pass_rate": 0.1667,
+        "avg_recall": 1.0,
+        "avg_precision": 0.3056,
+        "avg_accuracy": 0.5125,
+        "avg_hallucination_rate": 0.5307,
+        "avg_response_time_ms": 3990.35,
+        "detailed_results": [
+          {
+            "query": "投诉类型有哪几种？",
+            "expected_keywords": [
+              "答案问题",
+              "内容违规",
+              "服务问题",
+              "其他"
+            ],
+            "found_keywords": [
+              "答案问题",
+              "内容违规",
+              "服务问题",
+              "其他"
+            ],
+            "recall": 1.0,
+            "precision": 0.3333,
+            "accuracy": 0.75,
+            "hallucination_rate": 0.5814,
+            "response_time_ms": 3160.46,
+            "pass": false
+          },
+          {
+            "query": "处理状态有哪些？",
+            "expected_keywords": [
+              "已处理",
+              "未处理"
+            ],
+            "found_keywords": [
+              "已处理",
+              "未处理"
+            ],
+            "recall": 1.0,
+            "precision": 0.3333,
+            "accuracy": 1.0,
+            "hallucination_rate": 0.6111,
+            "response_time_ms": 3243.23,
+            "pass": true
+          },
+          {
+            "query": "一共有多少条投诉记录？",
+            "expected_keywords": [
+              "10"
+            ],
+            "found_keywords": [
+              "10"
+            ],
+            "recall": 1.0,
+            "precision": 0.3333,
+            "accuracy": 0.0,
+            "hallucination_rate": 0.5726,
+            "response_time_ms": 2834.33,
+            "pass": false
+          },
+          {
+            "query": "有多少条投诉是已处理的？",
+            "expected_keywords": [
+              "已处理",
+              "6"
+            ],
+            "found_keywords": [
+              "已处理",
+              "6"
+            ],
+            "recall": 1.0,
+            "precision": 0.6667,
+            "accuracy": 0.5,
+            "hallucination_rate": 0.5864,
+            "response_time_ms": 4611.37,
+            "pass": false
+          },
+          {
+            "query": "有多少条投诉是未处理的？",
+            "expected_keywords": [
+              "未处理",
+              "4"
+            ],
+            "found_keywords": [
+              "未处理",
+              "4"
+            ],
+            "recall": 1.0,
+            "precision": 0.3333,
+            "accuracy": 1.0,
+            "hallucination_rate": 0.292,
+            "response_time_ms": 5032.37,
+            "pass": true
+          },
+          {
+            "query": "内容违规类型的投诉有哪些？",
+            "expected_keywords": [
+              "内容违规",
+              "不适当引导",
+              "暴力",
+              "恐怖",
+              "敏感人物"
+            ],
+            "found_keywords": [
+              "内容违规",
+              "不适当引导",
+              "暴力",
+              "恐怖",
+              "敏感人物"
+            ],
+            "recall": 1.0,
+            "precision": 0.3333,
+            "accuracy": 0.4,
+            "hallucination_rate": 0.4368,
+            "response_time_ms": 4662.7,
+            "pass": false
+          },
+          {
+            "query": "服务问题类型的投诉有哪些？",
+            "expected_keywords": [
+              "服务问题",
+              "报错",
+              "卡顿",
+              "账号"
+            ],
+            "found_keywords": [
+              "服务问题",
+              "报错",
+              "卡顿",
+              "账号"
+            ],
+            "recall": 1.0,
+            "precision": 0.0,
+            "accuracy": 0.25,
+            "hallucination_rate": 0.6216,
+            "response_time_ms": 5480.11,
+            "pass": false
+          },
+          {
+            "query": "用户ID为2的投诉内容是什么？",
+            "expected_keywords": [
+              "2",
+              "不相关",
+              "逻辑混乱",
+              "不适当引导"
+            ],
+            "found_keywords": [
+              "2",
+              "不相关",
+              "逻辑混乱",
+              "不适当引导"
+            ],
+            "recall": 1.0,
+            "precision": 0.3333,
+            "accuracy": 0.5,
+            "hallucination_rate": 0.4143,
+            "response_time_ms": 2614.28,
+            "pass": false
+          },
+          {
+            "query": "2026年4月10日8点的投诉有哪些？",
+            "expected_keywords": [
+              "8:4",
+              "2",
+              "43"
+            ],
+            "found_keywords": [
+              "8:4",
+              "2",
+              "43"
+            ],
+            "recall": 1.0,
+            "precision": 0.3333,
+            "accuracy": 0.3333,
+            "hallucination_rate": 0.5259,
+            "response_time_ms": 6243.0,
+            "pass": false
+          },
+          {
+            "query": "用户43投诉了什么？",
+            "expected_keywords": [
+              "43",
+              "暴力",
+              "恐怖",
+              "报错"
+            ],
+            "found_keywords": [
+              "43",
+              "暴力",
+              "恐怖",
+              "报错"
+            ],
+            "recall": 1.0,
+            "precision": 0.0,
+            "accuracy": 0.25,
+            "hallucination_rate": 0.4557,
+            "response_time_ms": 3296.48,
+            "pass": false
+          },
+          {
+            "query": "文档中提到的第一个投诉是什么时间？",
+            "expected_keywords": [
+              "2026",
+              "8:46"
+            ],
+            "found_keywords": [
+              "2026",
+              "8:46"
+            ],
+            "recall": 1.0,
+            "precision": 0.3333,
+            "accuracy": 0.5,
+            "hallucination_rate": 0.6013,
+            "response_time_ms": 3051.41,
+            "pass": false
+          },
+          {
+            "query": "关于专业知识的投诉是什么？",
+            "expected_keywords": [
+              "36",
+              "专业知识",
+              "错误"
+            ],
+            "found_keywords": [
+              "36",
+              "专业知识",
+              "错误"
+            ],
+            "recall": 1.0,
+            "precision": 0.3333,
+            "accuracy": 0.6667,
+            "hallucination_rate": 0.6692,
+            "response_time_ms": 3654.47,
+            "pass": false
+          }
+        ]
+      },
+      {
+        "label": "B4: Hybrid + Rerank",
+        "test_count": 12,
+        "pass_count": 2,
+        "pass_rate": 0.1667,
+        "avg_recall": 1.0,
+        "avg_precision": 0.3056,
+        "avg_accuracy": 0.5125,
+        "avg_hallucination_rate": 0.5307,
+        "avg_response_time_ms": 3942.2,
+        "detailed_results": [
+          {
+            "query": "投诉类型有哪几种？",
+            "expected_keywords": [
+              "答案问题",
+              "内容违规",
+              "服务问题",
+              "其他"
+            ],
+            "found_keywords": [
+              "答案问题",
+              "内容违规",
+              "服务问题",
+              "其他"
+            ],
+            "recall": 1.0,
+            "precision": 0.3333,
+            "accuracy": 0.75,
+            "hallucination_rate": 0.5814,
+            "response_time_ms": 3121.84,
+            "pass": false
+          },
+          {
+            "query": "处理状态有哪些？",
+            "expected_keywords": [
+              "已处理",
+              "未处理"
+            ],
+            "found_keywords": [
+              "已处理",
+              "未处理"
+            ],
+            "recall": 1.0,
+            "precision": 0.3333,
+            "accuracy": 1.0,
+            "hallucination_rate": 0.6111,
+            "response_time_ms": 3253.5,
+            "pass": true
+          },
+          {
+            "query": "一共有多少条投诉记录？",
+            "expected_keywords": [
+              "10"
+            ],
+            "found_keywords": [
+              "10"
+            ],
+            "recall": 1.0,
+            "precision": 0.3333,
+            "accuracy": 0.0,
+            "hallucination_rate": 0.5726,
+            "response_time_ms": 2829.21,
+            "pass": false
+          },
+          {
+            "query": "有多少条投诉是已处理的？",
+            "expected_keywords": [
+              "已处理",
+              "6"
+            ],
+            "found_keywords": [
+              "已处理",
+              "6"
+            ],
+            "recall": 1.0,
+            "precision": 0.6667,
+            "accuracy": 0.5,
+            "hallucination_rate": 0.5864,
+            "response_time_ms": 4547.18,
+            "pass": false
+          },
+          {
+            "query": "有多少条投诉是未处理的？",
+            "expected_keywords": [
+              "未处理",
+              "4"
+            ],
+            "found_keywords": [
+              "未处理",
+              "4"
+            ],
+            "recall": 1.0,
+            "precision": 0.3333,
+            "accuracy": 1.0,
+            "hallucination_rate": 0.292,
+            "response_time_ms": 4917.97,
+            "pass": true
+          },
+          {
+            "query": "内容违规类型的投诉有哪些？",
+            "expected_keywords": [
+              "内容违规",
+              "不适当引导",
+              "暴力",
+              "恐怖",
+              "敏感人物"
+            ],
+            "found_keywords": [
+              "内容违规",
+              "不适当引导",
+              "暴力",
+              "恐怖",
+              "敏感人物"
+            ],
+            "recall": 1.0,
+            "precision": 0.3333,
+            "accuracy": 0.4,
+            "hallucination_rate": 0.4368,
+            "response_time_ms": 4504.18,
+            "pass": false
+          },
+          {
+            "query": "服务问题类型的投诉有哪些？",
+            "expected_keywords": [
+              "服务问题",
+              "报错",
+              "卡顿",
+              "账号"
+            ],
+            "found_keywords": [
+              "服务问题",
+              "报错",
+              "卡顿",
+              "账号"
+            ],
+            "recall": 1.0,
+            "precision": 0.0,
+            "accuracy": 0.25,
+            "hallucination_rate": 0.6216,
+            "response_time_ms": 5288.51,
+            "pass": false
+          },
+          {
+            "query": "用户ID为2的投诉内容是什么？",
+            "expected_keywords": [
+              "2",
+              "不相关",
+              "逻辑混乱",
+              "不适当引导"
+            ],
+            "found_keywords": [
+              "2",
+              "不相关",
+              "逻辑混乱",
+              "不适当引导"
+            ],
+            "recall": 1.0,
+            "precision": 0.3333,
+            "accuracy": 0.5,
+            "hallucination_rate": 0.4143,
+            "response_time_ms": 2573.76,
+            "pass": false
+          },
+          {
+            "query": "2026年4月10日8点的投诉有哪些？",
+            "expected_keywords": [
+              "8:4",
+              "2",
+              "43"
+            ],
+            "found_keywords": [
+              "8:4",
+              "2",
+              "43"
+            ],
+            "recall": 1.0,
+            "precision": 0.3333,
+            "accuracy": 0.3333,
+            "hallucination_rate": 0.5259,
+            "response_time_ms": 6180.86,
+            "pass": false
+          },
+          {
+            "query": "用户43投诉了什么？",
+            "expected_keywords": [
+              "43",
+              "暴力",
+              "恐怖",
+              "报错"
+            ],
+            "found_keywords": [
+              "43",
+              "暴力",
+              "恐怖",
+              "报错"
+            ],
+            "recall": 1.0,
+            "precision": 0.0,
+            "accuracy": 0.25,
+            "hallucination_rate": 0.4557,
+            "response_time_ms": 3335.96,
+            "pass": false
+          },
+          {
+            "query": "文档中提到的第一个投诉是什么时间？",
+            "expected_keywords": [
+              "2026",
+              "8:46"
+            ],
+            "found_keywords": [
+              "2026",
+              "8:46"
+            ],
+            "recall": 1.0,
+            "precision": 0.3333,
+            "accuracy": 0.5,
+            "hallucination_rate": 0.6013,
+            "response_time_ms": 3054.81,
+            "pass": false
+          },
+          {
+            "query": "关于专业知识的投诉是什么？",
+            "expected_keywords": [
+              "36",
+              "专业知识",
+              "错误"
+            ],
+            "found_keywords": [
+              "36",
+              "专业知识",
+              "错误"
+            ],
+            "recall": 1.0,
+            "precision": 0.3333,
+            "accuracy": 0.6667,
+            "hallucination_rate": 0.6692,
+            "response_time_ms": 3698.66,
+            "pass": false
+          }
+        ]
+      }
+    ],
+    "C_top_k": [
+      {
+        "label": "C1: k=3 rerank=3",
+        "test_count": 12,
+        "pass_count": 2,
+        "pass_rate": 0.1667,
+        "avg_recall": 0.9167,
+        "avg_precision": 0.2778,
+        "avg_accuracy": 0.5125,
+        "avg_hallucination_rate": 0.5132,
+        "avg_response_time_ms": 3961.12,
+        "detailed_results": [
+          {
+            "query": "投诉类型有哪几种？",
+            "expected_keywords": [
+              "答案问题",
+              "内容违规",
+              "服务问题",
+              "其他"
+            ],
+            "found_keywords": [
+              "答案问题",
+              "内容违规",
+              "服务问题",
+              "其他"
+            ],
+            "recall": 1.0,
+            "precision": 0.3333,
+            "accuracy": 0.75,
+            "hallucination_rate": 0.5814,
+            "response_time_ms": 3107.01,
+            "pass": false
+          },
+          {
+            "query": "处理状态有哪些？",
+            "expected_keywords": [
+              "已处理",
+              "未处理"
+            ],
+            "found_keywords": [
+              "已处理",
+              "未处理"
+            ],
+            "recall": 1.0,
+            "precision": 0.3333,
+            "accuracy": 1.0,
+            "hallucination_rate": 0.6111,
+            "response_time_ms": 3210.66,
+            "pass": true
+          },
+          {
+            "query": "一共有多少条投诉记录？",
+            "expected_keywords": [
+              "10"
+            ],
+            "found_keywords": [
+              "10"
+            ],
+            "recall": 1.0,
+            "precision": 0.3333,
+            "accuracy": 0.0,
+            "hallucination_rate": 0.5726,
+            "response_time_ms": 2832.75,
+            "pass": false
+          },
+          {
+            "query": "有多少条投诉是已处理的？",
+            "expected_keywords": [
+              "已处理",
+              "6"
+            ],
+            "found_keywords": [
+              "已处理",
+              "6"
+            ],
+            "recall": 1.0,
+            "precision": 0.6667,
+            "accuracy": 0.5,
+            "hallucination_rate": 0.5864,
+            "response_time_ms": 4560.13,
+            "pass": false
+          },
+          {
+            "query": "有多少条投诉是未处理的？",
+            "expected_keywords": [
+              "未处理",
+              "4"
+            ],
+            "found_keywords": [
+              "未处理",
+              "4"
+            ],
+            "recall": 1.0,
+            "precision": 0.3333,
+            "accuracy": 1.0,
+            "hallucination_rate": 0.292,
+            "response_time_ms": 4858.63,
+            "pass": true
+          },
+          {
+            "query": "内容违规类型的投诉有哪些？",
+            "expected_keywords": [
+              "内容违规",
+              "不适当引导",
+              "暴力",
+              "恐怖",
+              "敏感人物"
+            ],
+            "found_keywords": [
+              "内容违规",
+              "不适当引导",
+              "暴力",
+              "恐怖",
+              "敏感人物"
+            ],
+            "recall": 1.0,
+            "precision": 0.3333,
+            "accuracy": 0.4,
+            "hallucination_rate": 0.4368,
+            "response_time_ms": 4465.5,
+            "pass": false
+          },
+          {
+            "query": "服务问题类型的投诉有哪些？",
+            "expected_keywords": [
+              "服务问题",
+              "报错",
+              "卡顿",
+              "账号"
+            ],
+            "found_keywords": [
+              "服务问题",
+              "报错",
+              "卡顿",
+              "账号"
+            ],
+            "recall": 1.0,
+            "precision": 0.0,
+            "accuracy": 0.25,
+            "hallucination_rate": 0.6216,
+            "response_time_ms": 5248.81,
+            "pass": false
+          },
+          {
+            "query": "用户ID为2的投诉内容是什么？",
+            "expected_keywords": [
+              "2",
+              "不相关",
+              "逻辑混乱",
+              "不适当引导"
+            ],
+            "found_keywords": [
+              "2",
+              "不相关",
+              "逻辑混乱",
+              "不适当引导"
+            ],
+            "recall": 1.0,
+            "precision": 0.3333,
+            "accuracy": 0.5,
+            "hallucination_rate": 0.4143,
+            "response_time_ms": 2595.1,
+            "pass": false
+          },
+          {
+            "query": "2026年4月10日8点的投诉有哪些？",
+            "expected_keywords": [
+              "8:4",
+              "2",
+              "43"
+            ],
+            "found_keywords": [
+              "8:4",
+              "2",
+              "43"
+            ],
+            "recall": 1.0,
+            "precision": 0.3333,
+            "accuracy": 0.3333,
+            "hallucination_rate": 0.5259,
+            "response_time_ms": 6445.22,
+            "pass": false
+          },
+          {
+            "query": "用户43投诉了什么？",
+            "expected_keywords": [
+              "43",
+              "暴力",
+              "恐怖",
+              "报错"
+            ],
+            "found_keywords": [
+              "43",
+              "暴力",
+              "恐怖",
+              "报错"
+            ],
+            "recall": 1.0,
+            "precision": 0.0,
+            "accuracy": 0.75,
+            "hallucination_rate": 0.425,
+            "response_time_ms": 2507.8,
+            "pass": false
+          },
+          {
+            "query": "文档中提到的第一个投诉是什么时间？",
+            "expected_keywords": [
+              "2026",
+              "8:46"
+            ],
+            "found_keywords": [],
+            "recall": 0.0,
+            "precision": 0.0,
+            "accuracy": 0.0,
+            "hallucination_rate": 0.5071,
+            "response_time_ms": 3519.35,
+            "pass": false
+          },
+          {
+            "query": "关于专业知识的投诉是什么？",
+            "expected_keywords": [
+              "36",
+              "专业知识",
+              "错误"
+            ],
+            "found_keywords": [
+              "36",
+              "专业知识",
+              "错误"
+            ],
+            "recall": 1.0,
+            "precision": 0.3333,
+            "accuracy": 0.6667,
+            "hallucination_rate": 0.5836,
+            "response_time_ms": 4182.51,
+            "pass": false
+          }
+        ]
+      },
+      {
+        "label": "C2: k=5 rerank=3 (default)",
+        "test_count": 12,
+        "pass_count": 2,
+        "pass_rate": 0.1667,
+        "avg_recall": 1.0,
+        "avg_precision": 0.3056,
+        "avg_accuracy": 0.5125,
+        "avg_hallucination_rate": 0.5307,
+        "avg_response_time_ms": 3951.32,
+        "detailed_results": [
+          {
+            "query": "投诉类型有哪几种？",
+            "expected_keywords": [
+              "答案问题",
+              "内容违规",
+              "服务问题",
+              "其他"
+            ],
+            "found_keywords": [
+              "答案问题",
+              "内容违规",
+              "服务问题",
+              "其他"
+            ],
+            "recall": 1.0,
+            "precision": 0.3333,
+            "accuracy": 0.75,
+            "hallucination_rate": 0.5814,
+            "response_time_ms": 3418.42,
+            "pass": false
+          },
+          {
+            "query": "处理状态有哪些？",
+            "expected_keywords": [
+              "已处理",
+              "未处理"
+            ],
+            "found_keywords": [
+              "已处理",
+              "未处理"
+            ],
+            "recall": 1.0,
+            "precision": 0.3333,
+            "accuracy": 1.0,
+            "hallucination_rate": 0.6111,
+            "response_time_ms": 3229.32,
+            "pass": true
+          },
+          {
+            "query": "一共有多少条投诉记录？",
+            "expected_keywords": [
+              "10"
+            ],
+            "found_keywords": [
+              "10"
+            ],
+            "recall": 1.0,
+            "precision": 0.3333,
+            "accuracy": 0.0,
+            "hallucination_rate": 0.5726,
+            "response_time_ms": 2841.89,
+            "pass": false
+          },
+          {
+            "query": "有多少条投诉是已处理的？",
+            "expected_keywords": [
+              "已处理",
+              "6"
+            ],
+            "found_keywords": [
+              "已处理",
+              "6"
+            ],
+            "recall": 1.0,
+            "precision": 0.6667,
+            "accuracy": 0.5,
+            "hallucination_rate": 0.5864,
+            "response_time_ms": 4515.99,
+            "pass": false
+          },
+          {
+            "query": "有多少条投诉是未处理的？",
+            "expected_keywords": [
+              "未处理",
+              "4"
+            ],
+            "found_keywords": [
+              "未处理",
+              "4"
+            ],
+            "recall": 1.0,
+            "precision": 0.3333,
+            "accuracy": 1.0,
+            "hallucination_rate": 0.292,
+            "response_time_ms": 4902.41,
+            "pass": true
+          },
+          {
+            "query": "内容违规类型的投诉有哪些？",
+            "expected_keywords": [
+              "内容违规",
+              "不适当引导",
+              "暴力",
+              "恐怖",
+              "敏感人物"
+            ],
+            "found_keywords": [
+              "内容违规",
+              "不适当引导",
+              "暴力",
+              "恐怖",
+              "敏感人物"
+            ],
+            "recall": 1.0,
+            "precision": 0.3333,
+            "accuracy": 0.4,
+            "hallucination_rate": 0.4368,
+            "response_time_ms": 4450.14,
+            "pass": false
+          },
+          {
+            "query": "服务问题类型的投诉有哪些？",
+            "expected_keywords": [
+              "服务问题",
+              "报错",
+              "卡顿",
+              "账号"
+            ],
+            "found_keywords": [
+              "服务问题",
+              "报错",
+              "卡顿",
+              "账号"
+            ],
+            "recall": 1.0,
+            "precision": 0.0,
+            "accuracy": 0.25,
+            "hallucination_rate": 0.6216,
+            "response_time_ms": 5263.83,
+            "pass": false
+          },
+          {
+            "query": "用户ID为2的投诉内容是什么？",
+            "expected_keywords": [
+              "2",
+              "不相关",
+              "逻辑混乱",
+              "不适当引导"
+            ],
+            "found_keywords": [
+              "2",
+              "不相关",
+              "逻辑混乱",
+              "不适当引导"
+            ],
+            "recall": 1.0,
+            "precision": 0.3333,
+            "accuracy": 0.5,
+            "hallucination_rate": 0.4143,
+            "response_time_ms": 2602.51,
+            "pass": false
+          },
+          {
+            "query": "2026年4月10日8点的投诉有哪些？",
+            "expected_keywords": [
+              "8:4",
+              "2",
+              "43"
+            ],
+            "found_keywords": [
+              "8:4",
+              "2",
+              "43"
+            ],
+            "recall": 1.0,
+            "precision": 0.3333,
+            "accuracy": 0.3333,
+            "hallucination_rate": 0.5259,
+            "response_time_ms": 6212.64,
+            "pass": false
+          },
+          {
+            "query": "用户43投诉了什么？",
+            "expected_keywords": [
+              "43",
+              "暴力",
+              "恐怖",
+              "报错"
+            ],
+            "found_keywords": [
+              "43",
+              "暴力",
+              "恐怖",
+              "报错"
+            ],
+            "recall": 1.0,
+            "precision": 0.0,
+            "accuracy": 0.25,
+            "hallucination_rate": 0.4557,
+            "response_time_ms": 3271.44,
+            "pass": false
+          },
+          {
+            "query": "文档中提到的第一个投诉是什么时间？",
+            "expected_keywords": [
+              "2026",
+              "8:46"
+            ],
+            "found_keywords": [
+              "2026",
+              "8:46"
+            ],
+            "recall": 1.0,
+            "precision": 0.3333,
+            "accuracy": 0.5,
+            "hallucination_rate": 0.6013,
+            "response_time_ms": 2999.25,
+            "pass": false
+          },
+          {
+            "query": "关于专业知识的投诉是什么？",
+            "expected_keywords": [
+              "36",
+              "专业知识",
+              "错误"
+            ],
+            "found_keywords": [
+              "36",
+              "专业知识",
+              "错误"
+            ],
+            "recall": 1.0,
+            "precision": 0.3333,
+            "accuracy": 0.6667,
+            "hallucination_rate": 0.6692,
+            "response_time_ms": 3707.97,
+            "pass": false
+          }
+        ]
+      },
+      {
+        "label": "C3: k=5 rerank=5",
+        "test_count": 12,
+        "pass_count": 2,
+        "pass_rate": 0.1667,
+        "avg_recall": 1.0,
+        "avg_precision": 0.2569,
+        "avg_accuracy": 0.5403,
+        "avg_hallucination_rate": 0.4956,
+        "avg_response_time_ms": 4101.49,
+        "detailed_results": [
+          {
+            "query": "投诉类型有哪几种？",
+            "expected_keywords": [
+              "答案问题",
+              "内容违规",
+              "服务问题",
+              "其他"
+            ],
+            "found_keywords": [
+              "答案问题",
+              "内容违规",
+              "服务问题",
+              "其他"
+            ],
+            "recall": 1.0,
+            "precision": 0.25,
+            "accuracy": 0.75,
+            "hallucination_rate": 0.5646,
+            "response_time_ms": 3929.98,
+            "pass": false
+          },
+          {
+            "query": "处理状态有哪些？",
+            "expected_keywords": [
+              "已处理",
+              "未处理"
+            ],
+            "found_keywords": [
+              "已处理",
+              "未处理"
+            ],
+            "recall": 1.0,
+            "precision": 0.25,
+            "accuracy": 1.0,
+            "hallucination_rate": 0.6138,
+            "response_time_ms": 3204.16,
+            "pass": true
+          },
+          {
+            "query": "一共有多少条投诉记录？",
+            "expected_keywords": [
+              "10"
+            ],
+            "found_keywords": [
+              "10"
+            ],
+            "recall": 1.0,
+            "precision": 0.25,
+            "accuracy": 0.0,
+            "hallucination_rate": 0.5794,
+            "response_time_ms": 2820.63,
+            "pass": false
+          },
+          {
+            "query": "有多少条投诉是已处理的？",
+            "expected_keywords": [
+              "已处理",
+              "6"
+            ],
+            "found_keywords": [
+              "已处理",
+              "6"
+            ],
+            "recall": 1.0,
+            "precision": 0.6667,
+            "accuracy": 0.5,
+            "hallucination_rate": 0.3383,
+            "response_time_ms": 4370.25,
+            "pass": false
+          },
+          {
+            "query": "有多少条投诉是未处理的？",
+            "expected_keywords": [
+              "未处理",
+              "4"
+            ],
+            "found_keywords": [
+              "未处理",
+              "4"
+            ],
+            "recall": 1.0,
+            "precision": 0.3333,
+            "accuracy": 1.0,
+            "hallucination_rate": 0.2773,
+            "response_time_ms": 5020.2,
+            "pass": true
+          },
+          {
+            "query": "内容违规类型的投诉有哪些？",
+            "expected_keywords": [
+              "内容违规",
+              "不适当引导",
+              "暴力",
+              "恐怖",
+              "敏感人物"
+            ],
+            "found_keywords": [
+              "内容违规",
+              "不适当引导",
+              "暴力",
+              "恐怖",
+              "敏感人物"
+            ],
+            "recall": 1.0,
+            "precision": 0.3333,
+            "accuracy": 0.4,
+            "hallucination_rate": 0.4497,
+            "response_time_ms": 4782.77,
+            "pass": false
+          },
+          {
+            "query": "服务问题类型的投诉有哪些？",
+            "expected_keywords": [
+              "服务问题",
+              "报错",
+              "卡顿",
+              "账号"
+            ],
+            "found_keywords": [
+              "服务问题",
+              "报错",
+              "卡顿",
+              "账号"
+            ],
+            "recall": 1.0,
+            "precision": 0.0,
+            "accuracy": 0.25,
+            "hallucination_rate": 0.4675,
+            "response_time_ms": 4610.17,
+            "pass": false
+          },
+          {
+            "query": "用户ID为2的投诉内容是什么？",
+            "expected_keywords": [
+              "2",
+              "不相关",
+              "逻辑混乱",
+              "不适当引导"
+            ],
+            "found_keywords": [
+              "2",
+              "不相关",
+              "逻辑混乱",
+              "不适当引导"
+            ],
+            "recall": 1.0,
+            "precision": 0.25,
+            "accuracy": 0.5,
+            "hallucination_rate": 0.4295,
+            "response_time_ms": 2587.3,
+            "pass": false
+          },
+          {
+            "query": "2026年4月10日8点的投诉有哪些？",
+            "expected_keywords": [
+              "8:4",
+              "2",
+              "43"
+            ],
+            "found_keywords": [
+              "8:4",
+              "2",
+              "43"
+            ],
+            "recall": 1.0,
+            "precision": 0.25,
+            "accuracy": 0.6667,
+            "hallucination_rate": 0.5361,
+            "response_time_ms": 8029.94,
+            "pass": false
+          },
+          {
+            "query": "用户43投诉了什么？",
+            "expected_keywords": [
+              "43",
+              "暴力",
+              "恐怖",
+              "报错"
+            ],
+            "found_keywords": [
+              "43",
+              "暴力",
+              "恐怖",
+              "报错"
+            ],
+            "recall": 1.0,
+            "precision": 0.0,
+            "accuracy": 0.25,
+            "hallucination_rate": 0.4557,
+            "response_time_ms": 3382.0,
+            "pass": false
+          },
+          {
+            "query": "文档中提到的第一个投诉是什么时间？",
+            "expected_keywords": [
+              "2026",
+              "8:46"
+            ],
+            "found_keywords": [
+              "2026",
+              "8:46"
+            ],
+            "recall": 1.0,
+            "precision": 0.25,
+            "accuracy": 0.5,
+            "hallucination_rate": 0.6121,
+            "response_time_ms": 3066.71,
+            "pass": false
+          },
+          {
+            "query": "关于专业知识的投诉是什么？",
+            "expected_keywords": [
+              "36",
+              "专业知识",
+              "错误"
+            ],
+            "found_keywords": [
+              "36",
+              "专业知识",
+              "错误"
+            ],
+            "recall": 1.0,
+            "precision": 0.25,
+            "accuracy": 0.6667,
+            "hallucination_rate": 0.6227,
+            "response_time_ms": 3413.81,
+            "pass": false
+          }
+        ]
+      },
+      {
+        "label": "C4: k=8 rerank=5",
+        "test_count": 12,
+        "pass_count": 2,
+        "pass_rate": 0.1667,
+        "avg_recall": 1.0,
+        "avg_precision": 0.2292,
+        "avg_accuracy": 0.5403,
+        "avg_hallucination_rate": 0.5258,
+        "avg_response_time_ms": 4073.76,
+        "detailed_results": [
+          {
+            "query": "投诉类型有哪几种？",
+            "expected_keywords": [
+              "答案问题",
+              "内容违规",
+              "服务问题",
+              "其他"
+            ],
+            "found_keywords": [
+              "答案问题",
+              "内容违规",
+              "服务问题",
+              "其他"
+            ],
+            "recall": 1.0,
+            "precision": 0.25,
+            "accuracy": 0.75,
+            "hallucination_rate": 0.5656,
+            "response_time_ms": 4192.77,
+            "pass": false
+          },
+          {
+            "query": "处理状态有哪些？",
+            "expected_keywords": [
+              "已处理",
+              "未处理"
+            ],
+            "found_keywords": [
+              "已处理",
+              "未处理"
+            ],
+            "recall": 1.0,
+            "precision": 0.25,
+            "accuracy": 1.0,
+            "hallucination_rate": 0.6138,
+            "response_time_ms": 3291.76,
+            "pass": true
+          },
+          {
+            "query": "一共有多少条投诉记录？",
+            "expected_keywords": [
+              "10"
+            ],
+            "found_keywords": [
+              "10"
+            ],
+            "recall": 1.0,
+            "precision": 0.25,
+            "accuracy": 0.0,
+            "hallucination_rate": 0.5794,
+            "response_time_ms": 2867.58,
+            "pass": false
+          },
+          {
+            "query": "有多少条投诉是已处理的？",
+            "expected_keywords": [
+              "已处理",
+              "6"
+            ],
+            "found_keywords": [
+              "已处理",
+              "6"
+            ],
+            "recall": 1.0,
+            "precision": 0.5,
+            "accuracy": 0.5,
+            "hallucination_rate": 0.6591,
+            "response_time_ms": 4710.33,
+            "pass": false
+          },
+          {
+            "query": "有多少条投诉是未处理的？",
+            "expected_keywords": [
+              "未处理",
+              "4"
+            ],
+            "found_keywords": [
+              "未处理",
+              "4"
+            ],
+            "recall": 1.0,
+            "precision": 0.25,
+            "accuracy": 1.0,
+            "hallucination_rate": 0.3143,
+            "response_time_ms": 4660.45,
+            "pass": true
+          },
+          {
+            "query": "内容违规类型的投诉有哪些？",
+            "expected_keywords": [
+              "内容违规",
+              "不适当引导",
+              "暴力",
+              "恐怖",
+              "敏感人物"
+            ],
+            "found_keywords": [
+              "内容违规",
+              "不适当引导",
+              "暴力",
+              "恐怖",
+              "敏感人物"
+            ],
+            "recall": 1.0,
+            "precision": 0.25,
+            "accuracy": 0.4,
+            "hallucination_rate": 0.362,
+            "response_time_ms": 5181.71,
+            "pass": false
+          },
+          {
+            "query": "服务问题类型的投诉有哪些？",
+            "expected_keywords": [
+              "服务问题",
+              "报错",
+              "卡顿",
+              "账号"
+            ],
+            "found_keywords": [
+              "服务问题",
+              "报错",
+              "卡顿",
+              "账号"
+            ],
+            "recall": 1.0,
+            "precision": 0.0,
+            "accuracy": 0.25,
+            "hallucination_rate": 0.6926,
+            "response_time_ms": 5799.71,
+            "pass": false
+          },
+          {
+            "query": "用户ID为2的投诉内容是什么？",
+            "expected_keywords": [
+              "2",
+              "不相关",
+              "逻辑混乱",
+              "不适当引导"
+            ],
+            "found_keywords": [
+              "2",
+              "不相关",
+              "逻辑混乱",
+              "不适当引导"
+            ],
+            "recall": 1.0,
+            "precision": 0.25,
+            "accuracy": 0.5,
+            "hallucination_rate": 0.4295,
+            "response_time_ms": 2799.4,
+            "pass": false
+          },
+          {
+            "query": "2026年4月10日8点的投诉有哪些？",
+            "expected_keywords": [
+              "8:4",
+              "2",
+              "43"
+            ],
+            "found_keywords": [
+              "8:4",
+              "2",
+              "43"
+            ],
+            "recall": 1.0,
+            "precision": 0.25,
+            "accuracy": 0.6667,
+            "hallucination_rate": 0.5845,
+            "response_time_ms": 5823.96,
+            "pass": false
+          },
+          {
+            "query": "用户43投诉了什么？",
+            "expected_keywords": [
+              "43",
+              "暴力",
+              "恐怖",
+              "报错"
+            ],
+            "found_keywords": [
+              "43",
+              "暴力",
+              "恐怖",
+              "报错"
+            ],
+            "recall": 1.0,
+            "precision": 0.0,
+            "accuracy": 0.25,
+            "hallucination_rate": 0.4101,
+            "response_time_ms": 2845.96,
+            "pass": false
+          },
+          {
+            "query": "文档中提到的第一个投诉是什么时间？",
+            "expected_keywords": [
+              "2026",
+              "8:46"
+            ],
+            "found_keywords": [
+              "2026",
+              "8:46"
+            ],
+            "recall": 1.0,
+            "precision": 0.25,
+            "accuracy": 0.5,
+            "hallucination_rate": 0.6049,
+            "response_time_ms": 2867.12,
+            "pass": false
+          },
+          {
+            "query": "关于专业知识的投诉是什么？",
+            "expected_keywords": [
+              "36",
+              "专业知识",
+              "错误"
+            ],
+            "found_keywords": [
+              "36",
+              "专业知识",
+              "错误"
+            ],
+            "recall": 1.0,
+            "precision": 0.25,
+            "accuracy": 0.6667,
+            "hallucination_rate": 0.4932,
+            "response_time_ms": 3844.34,
+            "pass": false
+          }
+        ]
+      }
+    ]
+  }
+}

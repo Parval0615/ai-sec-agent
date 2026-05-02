@@ -1,0 +1,898 @@
+{
+  "test_date": "20260501_140333",
+  "pdf_path": "docs/large_test.pdf",
+  "test_case_count": 15,
+  "llm_model": "Qwen/Qwen3.5-35B-A3B",
+  "api_provider": "ModelScope",
+  "reranker": "BAAI/bge-reranker-base (active)",
+  "experiment_groups": {
+    "A_chunk_size": [
+      {
+        "label": "A1: chunk=400 overlap=75",
+        "test_count": 15,
+        "pass_count": 6,
+        "pass_rate": 0.4,
+        "avg_recall": 0.7778,
+        "avg_precision": 0.2889,
+        "avg_accuracy": 0.6944,
+        "avg_hallucination_rate": 0.4447,
+        "avg_response_time_ms": 24625.27,
+        "detailed_results": [
+          {
+            "query": "用户投诉分为哪四大类？",
+            "expected_keywords": [
+              "答案质量",
+              "内容安全",
+              "服务质量",
+              "其他"
+            ],
+            "found_keywords": [
+              "答案质量",
+              "内容安全",
+              "服务质量"
+            ],
+            "recall": 0.75,
+            "precision": 0.6667,
+            "accuracy": 0.75,
+            "hallucination_rate": 0.6204,
+            "response_time_ms": 47763.88,
+            "pass": false
+          },
+          {
+            "query": "处理状态有哪几种？",
+            "expected_keywords": [
+              "已处理",
+              "处理中",
+              "已采纳",
+              "评估中"
+            ],
+            "found_keywords": [
+              "已处理"
+            ],
+            "recall": 0.25,
+            "precision": 0.6667,
+            "accuracy": 0.25,
+            "hallucination_rate": 0.6749,
+            "response_time_ms": 28629.61,
+            "pass": false
+          },
+          {
+            "query": "严重等级分为哪些级别？",
+            "expected_keywords": [
+              "S",
+              "A",
+              "B",
+              "C"
+            ],
+            "found_keywords": [
+              "S",
+              "A",
+              "B",
+              "C"
+            ],
+            "recall": 1.0,
+            "precision": 1.0,
+            "accuracy": 0.75,
+            "hallucination_rate": 0.545,
+            "response_time_ms": 36882.32,
+            "pass": false
+          },
+          {
+            "query": "一共有多少条投诉记录？",
+            "expected_keywords": [
+              "60"
+            ],
+            "found_keywords": [
+              "60"
+            ],
+            "recall": 1.0,
+            "precision": 0.0,
+            "accuracy": 0.0,
+            "hallucination_rate": 0.5941,
+            "response_time_ms": 29587.39,
+            "pass": false
+          },
+          {
+            "query": "文档中S级(紧急)投诉有多少条？",
+            "expected_keywords": [
+              "S"
+            ],
+            "found_keywords": [
+              "S"
+            ],
+            "recall": 1.0,
+            "precision": 0.6667,
+            "accuracy": 1.0,
+            "hallucination_rate": 0.4181,
+            "response_time_ms": 23202.71,
+            "pass": true
+          },
+          {
+            "query": "内容安全类型的投诉子类有哪些？",
+            "expected_keywords": [
+              "违规内容生成",
+              "不当引导",
+              "偏见与歧视",
+              "敏感人物调侃"
+            ],
+            "found_keywords": [
+              "违规内容生成",
+              "不当引导",
+              "偏见与歧视",
+              "敏感人物调侃"
+            ],
+            "recall": 1.0,
+            "precision": 0.3333,
+            "accuracy": 1.0,
+            "hallucination_rate": 0.2574,
+            "response_time_ms": 14080.8,
+            "pass": true
+          },
+          {
+            "query": "服务质量问题的子类有哪些？",
+            "expected_keywords": [
+              "响应超时",
+              "系统报错",
+              "账号异常",
+              "界面故障"
+            ],
+            "found_keywords": [
+              "响应超时",
+              "系统报错"
+            ],
+            "recall": 0.5,
+            "precision": 0.0,
+            "accuracy": 0.5,
+            "hallucination_rate": 0.3096,
+            "response_time_ms": 19250.19,
+            "pass": false
+          },
+          {
+            "query": "答案质量问题的子类有哪些？",
+            "expected_keywords": [
+              "事实性错误",
+              "逻辑混乱",
+              "回答不完整",
+              "答非所问",
+              "专业知识错误"
+            ],
+            "found_keywords": [
+              "事实性错误",
+              "逻辑混乱",
+              "回答不完整",
+              "答非所问",
+              "专业知识错误"
+            ],
+            "recall": 1.0,
+            "precision": 0.0,
+            "accuracy": 1.0,
+            "hallucination_rate": 0.2947,
+            "response_time_ms": 12242.2,
+            "pass": true
+          },
+          {
+            "query": "S级(紧急)且已处理的投诉有哪些？",
+            "expected_keywords": [
+              "S",
+              "已处理",
+              "医疗",
+              "爆炸物"
+            ],
+            "found_keywords": [
+              "S",
+              "已处理",
+              "医疗"
+            ],
+            "recall": 0.75,
+            "precision": 0.6667,
+            "accuracy": 0.75,
+            "hallucination_rate": 0.5078,
+            "response_time_ms": 51943.25,
+            "pass": false
+          },
+          {
+            "query": "OWASP Top 10中哪些威胁的风险值最高？",
+            "expected_keywords": [
+              "Prompt注入",
+              "24.0",
+              "敏感信息泄露",
+              "20.2"
+            ],
+            "found_keywords": [
+              "24.0"
+            ],
+            "recall": 0.25,
+            "precision": 0.0,
+            "accuracy": 0.25,
+            "hallucination_rate": 0.664,
+            "response_time_ms": 39472.65,
+            "pass": false
+          },
+          {
+            "query": "CMP-0245投诉了什么？",
+            "expected_keywords": [
+              "CMP-0245",
+              "自杀",
+              "100"
+            ],
+            "found_keywords": [
+              "CMP-0245",
+              "自杀",
+              "100"
+            ],
+            "recall": 1.0,
+            "precision": 0.0,
+            "accuracy": 1.0,
+            "hallucination_rate": 0.4633,
+            "response_time_ms": 16110.88,
+            "pass": true
+          },
+          {
+            "query": "平台日均API调用量是多少？",
+            "expected_keywords": [
+              "523000",
+              "523,000"
+            ],
+            "found_keywords": [
+              "523,000"
+            ],
+            "recall": 0.5,
+            "precision": 0.3333,
+            "accuracy": 0.5,
+            "hallucination_rate": 0.3713,
+            "response_time_ms": 12893.01,
+            "pass": false
+          },
+          {
+            "query": "文档中提到的安全事件INC-042是什么？",
+            "expected_keywords": [
+              "INC-042",
+              "Prompt注入",
+              "大规模"
+            ],
+            "found_keywords": [
+              "INC-042",
+              "大规模"
+            ],
+            "recall": 0.6667,
+            "precision": 0.0,
+            "accuracy": 0.6667,
+            "hallucination_rate": 0.2464,
+            "response_time_ms": 11740.0,
+            "pass": false
+          },
+          {
+            "query": "RAG检索Top-5命中率是多少？",
+            "expected_keywords": [
+              "87.3",
+              "Top-5",
+              "命中率"
+            ],
+            "found_keywords": [
+              "87.3",
+              "Top-5",
+              "命中率"
+            ],
+            "recall": 1.0,
+            "precision": 0.0,
+            "accuracy": 1.0,
+            "hallucination_rate": 0.3678,
+            "response_time_ms": 10545.08,
+            "pass": true
+          },
+          {
+            "query": "2026年3月15日发生了什么安全事件？",
+            "expected_keywords": [
+              "INC-037",
+              "幻觉",
+              "民法典"
+            ],
+            "found_keywords": [
+              "INC-037",
+              "幻觉",
+              "民法典"
+            ],
+            "recall": 1.0,
+            "precision": 0.0,
+            "accuracy": 1.0,
+            "hallucination_rate": 0.336,
+            "response_time_ms": 15035.04,
+            "pass": true
+          }
+        ]
+      },
+      {
+        "label": "A2: chunk=800 overlap=150 (default)",
+        "test_count": 15,
+        "pass_count": 9,
+        "pass_rate": 0.6,
+        "avg_recall": 0.8278,
+        "avg_precision": 0.2889,
+        "avg_accuracy": 0.7667,
+        "avg_hallucination_rate": 0.421,
+        "avg_response_time_ms": 24011.37,
+        "detailed_results": [
+          {
+            "query": "用户投诉分为哪四大类？",
+            "expected_keywords": [
+              "答案质量",
+              "内容安全",
+              "服务质量",
+              "其他"
+            ],
+            "found_keywords": [
+              "答案质量",
+              "内容安全",
+              "服务质量",
+              "其他"
+            ],
+            "recall": 1.0,
+            "precision": 0.6667,
+            "accuracy": 1.0,
+            "hallucination_rate": 0.4886,
+            "response_time_ms": 19722.61,
+            "pass": true
+          },
+          {
+            "query": "处理状态有哪几种？",
+            "expected_keywords": [
+              "已处理",
+              "处理中",
+              "已采纳",
+              "评估中"
+            ],
+            "found_keywords": [
+              "已处理",
+              "处理中"
+            ],
+            "recall": 0.5,
+            "precision": 0.6667,
+            "accuracy": 0.25,
+            "hallucination_rate": 0.6965,
+            "response_time_ms": 31686.53,
+            "pass": false
+          },
+          {
+            "query": "严重等级分为哪些级别？",
+            "expected_keywords": [
+              "S",
+              "A",
+              "B",
+              "C"
+            ],
+            "found_keywords": [
+              "S",
+              "A",
+              "B",
+              "C"
+            ],
+            "recall": 1.0,
+            "precision": 1.0,
+            "accuracy": 1.0,
+            "hallucination_rate": 0.6866,
+            "response_time_ms": 26128.51,
+            "pass": true
+          },
+          {
+            "query": "一共有多少条投诉记录？",
+            "expected_keywords": [
+              "60"
+            ],
+            "found_keywords": [
+              "60"
+            ],
+            "recall": 1.0,
+            "precision": 0.0,
+            "accuracy": 0.0,
+            "hallucination_rate": 0.5195,
+            "response_time_ms": 48352.59,
+            "pass": false
+          },
+          {
+            "query": "文档中S级(紧急)投诉有多少条？",
+            "expected_keywords": [
+              "S"
+            ],
+            "found_keywords": [
+              "S"
+            ],
+            "recall": 1.0,
+            "precision": 0.6667,
+            "accuracy": 1.0,
+            "hallucination_rate": 0.3428,
+            "response_time_ms": 41483.25,
+            "pass": true
+          },
+          {
+            "query": "内容安全类型的投诉子类有哪些？",
+            "expected_keywords": [
+              "违规内容生成",
+              "不当引导",
+              "偏见与歧视",
+              "敏感人物调侃"
+            ],
+            "found_keywords": [
+              "违规内容生成",
+              "不当引导",
+              "偏见与歧视",
+              "敏感人物调侃"
+            ],
+            "recall": 1.0,
+            "precision": 0.0,
+            "accuracy": 1.0,
+            "hallucination_rate": 0.3219,
+            "response_time_ms": 22323.06,
+            "pass": true
+          },
+          {
+            "query": "服务质量问题的子类有哪些？",
+            "expected_keywords": [
+              "响应超时",
+              "系统报错",
+              "账号异常",
+              "界面故障"
+            ],
+            "found_keywords": [
+              "响应超时",
+              "系统报错",
+              "账号异常",
+              "界面故障"
+            ],
+            "recall": 1.0,
+            "precision": 0.3333,
+            "accuracy": 1.0,
+            "hallucination_rate": 0.2762,
+            "response_time_ms": 18660.94,
+            "pass": true
+          },
+          {
+            "query": "答案质量问题的子类有哪些？",
+            "expected_keywords": [
+              "事实性错误",
+              "逻辑混乱",
+              "回答不完整",
+              "答非所问",
+              "专业知识错误"
+            ],
+            "found_keywords": [
+              "事实性错误",
+              "逻辑混乱",
+              "回答不完整",
+              "答非所问",
+              "专业知识错误"
+            ],
+            "recall": 1.0,
+            "precision": 0.0,
+            "accuracy": 1.0,
+            "hallucination_rate": 0.3037,
+            "response_time_ms": 14057.49,
+            "pass": true
+          },
+          {
+            "query": "S级(紧急)且已处理的投诉有哪些？",
+            "expected_keywords": [
+              "S",
+              "已处理",
+              "医疗",
+              "爆炸物"
+            ],
+            "found_keywords": [
+              "S",
+              "已处理",
+              "医疗",
+              "爆炸物"
+            ],
+            "recall": 1.0,
+            "precision": 0.6667,
+            "accuracy": 1.0,
+            "hallucination_rate": 0.3111,
+            "response_time_ms": 34222.48,
+            "pass": true
+          },
+          {
+            "query": "OWASP Top 10中哪些威胁的风险值最高？",
+            "expected_keywords": [
+              "Prompt注入",
+              "24.0",
+              "敏感信息泄露",
+              "20.2"
+            ],
+            "found_keywords": [
+              "24.0",
+              "敏感信息泄露",
+              "20.2"
+            ],
+            "recall": 0.75,
+            "precision": 0.0,
+            "accuracy": 0.75,
+            "hallucination_rate": 0.4008,
+            "response_time_ms": 28333.79,
+            "pass": false
+          },
+          {
+            "query": "CMP-0245投诉了什么？",
+            "expected_keywords": [
+              "CMP-0245",
+              "自杀",
+              "100"
+            ],
+            "found_keywords": [],
+            "recall": 0.0,
+            "precision": 0.0,
+            "accuracy": 0.3333,
+            "hallucination_rate": 0.7697,
+            "response_time_ms": 17022.99,
+            "pass": false
+          },
+          {
+            "query": "平台日均API调用量是多少？",
+            "expected_keywords": [
+              "523000",
+              "523,000"
+            ],
+            "found_keywords": [
+              "523,000"
+            ],
+            "recall": 0.5,
+            "precision": 0.3333,
+            "accuracy": 0.5,
+            "hallucination_rate": 0.2756,
+            "response_time_ms": 15527.19,
+            "pass": false
+          },
+          {
+            "query": "文档中提到的安全事件INC-042是什么？",
+            "expected_keywords": [
+              "INC-042",
+              "Prompt注入",
+              "大规模"
+            ],
+            "found_keywords": [
+              "INC-042",
+              "大规模"
+            ],
+            "recall": 0.6667,
+            "precision": 0.0,
+            "accuracy": 0.6667,
+            "hallucination_rate": 0.2402,
+            "response_time_ms": 15939.57,
+            "pass": false
+          },
+          {
+            "query": "RAG检索Top-5命中率是多少？",
+            "expected_keywords": [
+              "87.3",
+              "Top-5",
+              "命中率"
+            ],
+            "found_keywords": [
+              "87.3",
+              "Top-5",
+              "命中率"
+            ],
+            "recall": 1.0,
+            "precision": 0.0,
+            "accuracy": 1.0,
+            "hallucination_rate": 0.3654,
+            "response_time_ms": 13973.7,
+            "pass": true
+          },
+          {
+            "query": "2026年3月15日发生了什么安全事件？",
+            "expected_keywords": [
+              "INC-037",
+              "幻觉",
+              "民法典"
+            ],
+            "found_keywords": [
+              "INC-037",
+              "幻觉",
+              "民法典"
+            ],
+            "recall": 1.0,
+            "precision": 0.0,
+            "accuracy": 1.0,
+            "hallucination_rate": 0.3163,
+            "response_time_ms": 12735.89,
+            "pass": true
+          }
+        ]
+      },
+      {
+        "label": "A3: chunk=1200 overlap=200",
+        "test_count": 15,
+        "pass_count": 9,
+        "pass_rate": 0.6,
+        "avg_recall": 0.7611,
+        "avg_precision": 0.1889,
+        "avg_accuracy": 0.7667,
+        "avg_hallucination_rate": 0.4271,
+        "avg_response_time_ms": 19989.68,
+        "detailed_results": [
+          {
+            "query": "用户投诉分为哪四大类？",
+            "expected_keywords": [
+              "答案质量",
+              "内容安全",
+              "服务质量",
+              "其他"
+            ],
+            "found_keywords": [
+              "答案质量",
+              "内容安全",
+              "服务质量",
+              "其他"
+            ],
+            "recall": 1.0,
+            "precision": 0.5,
+            "accuracy": 1.0,
+            "hallucination_rate": 0.5052,
+            "response_time_ms": 11975.19,
+            "pass": true
+          },
+          {
+            "query": "处理状态有哪几种？",
+            "expected_keywords": [
+              "已处理",
+              "处理中",
+              "已采纳",
+              "评估中"
+            ],
+            "found_keywords": [
+              "已处理",
+              "处理中"
+            ],
+            "recall": 0.5,
+            "precision": 0.3333,
+            "accuracy": 0.25,
+            "hallucination_rate": 0.6818,
+            "response_time_ms": 31842.77,
+            "pass": false
+          },
+          {
+            "query": "严重等级分为哪些级别？",
+            "expected_keywords": [
+              "S",
+              "A",
+              "B",
+              "C"
+            ],
+            "found_keywords": [
+              "S",
+              "A",
+              "B",
+              "C"
+            ],
+            "recall": 1.0,
+            "precision": 0.5,
+            "accuracy": 1.0,
+            "hallucination_rate": 0.5203,
+            "response_time_ms": 11494.28,
+            "pass": true
+          },
+          {
+            "query": "一共有多少条投诉记录？",
+            "expected_keywords": [
+              "60"
+            ],
+            "found_keywords": [],
+            "recall": 0.0,
+            "precision": 0.0,
+            "accuracy": 0.0,
+            "hallucination_rate": 0.5685,
+            "response_time_ms": 40994.72,
+            "pass": false
+          },
+          {
+            "query": "文档中S级(紧急)投诉有多少条？",
+            "expected_keywords": [
+              "S"
+            ],
+            "found_keywords": [
+              "S"
+            ],
+            "recall": 1.0,
+            "precision": 0.5,
+            "accuracy": 1.0,
+            "hallucination_rate": 0.3843,
+            "response_time_ms": 21452.28,
+            "pass": true
+          },
+          {
+            "query": "内容安全类型的投诉子类有哪些？",
+            "expected_keywords": [
+              "违规内容生成",
+              "不当引导",
+              "偏见与歧视",
+              "敏感人物调侃"
+            ],
+            "found_keywords": [
+              "违规内容生成",
+              "不当引导",
+              "偏见与歧视",
+              "敏感人物调侃"
+            ],
+            "recall": 1.0,
+            "precision": 0.0,
+            "accuracy": 1.0,
+            "hallucination_rate": 0.2733,
+            "response_time_ms": 22901.15,
+            "pass": true
+          },
+          {
+            "query": "服务质量问题的子类有哪些？",
+            "expected_keywords": [
+              "响应超时",
+              "系统报错",
+              "账号异常",
+              "界面故障"
+            ],
+            "found_keywords": [
+              "响应超时",
+              "系统报错",
+              "账号异常",
+              "界面故障"
+            ],
+            "recall": 1.0,
+            "precision": 0.0,
+            "accuracy": 1.0,
+            "hallucination_rate": 0.2854,
+            "response_time_ms": 19096.23,
+            "pass": true
+          },
+          {
+            "query": "答案质量问题的子类有哪些？",
+            "expected_keywords": [
+              "事实性错误",
+              "逻辑混乱",
+              "回答不完整",
+              "答非所问",
+              "专业知识错误"
+            ],
+            "found_keywords": [
+              "事实性错误",
+              "逻辑混乱",
+              "回答不完整",
+              "答非所问",
+              "专业知识错误"
+            ],
+            "recall": 1.0,
+            "precision": 0.0,
+            "accuracy": 1.0,
+            "hallucination_rate": 0.2794,
+            "response_time_ms": 12943.35,
+            "pass": true
+          },
+          {
+            "query": "S级(紧急)且已处理的投诉有哪些？",
+            "expected_keywords": [
+              "S",
+              "已处理",
+              "医疗",
+              "爆炸物"
+            ],
+            "found_keywords": [
+              "S",
+              "已处理",
+              "医疗",
+              "爆炸物"
+            ],
+            "recall": 1.0,
+            "precision": 0.6667,
+            "accuracy": 1.0,
+            "hallucination_rate": 0.3853,
+            "response_time_ms": 29545.53,
+            "pass": true
+          },
+          {
+            "query": "OWASP Top 10中哪些威胁的风险值最高？",
+            "expected_keywords": [
+              "Prompt注入",
+              "24.0",
+              "敏感信息泄露",
+              "20.2"
+            ],
+            "found_keywords": [
+              "24.0",
+              "敏感信息泄露",
+              "20.2"
+            ],
+            "recall": 0.75,
+            "precision": 0.0,
+            "accuracy": 0.75,
+            "hallucination_rate": 0.394,
+            "response_time_ms": 17362.83,
+            "pass": false
+          },
+          {
+            "query": "CMP-0245投诉了什么？",
+            "expected_keywords": [
+              "CMP-0245",
+              "自杀",
+              "100"
+            ],
+            "found_keywords": [],
+            "recall": 0.0,
+            "precision": 0.0,
+            "accuracy": 0.3333,
+            "hallucination_rate": 0.72,
+            "response_time_ms": 17432.56,
+            "pass": false
+          },
+          {
+            "query": "平台日均API调用量是多少？",
+            "expected_keywords": [
+              "523000",
+              "523,000"
+            ],
+            "found_keywords": [
+              "523,000"
+            ],
+            "recall": 0.5,
+            "precision": 0.3333,
+            "accuracy": 0.5,
+            "hallucination_rate": 0.411,
+            "response_time_ms": 19381.43,
+            "pass": false
+          },
+          {
+            "query": "文档中提到的安全事件INC-042是什么？",
+            "expected_keywords": [
+              "INC-042",
+              "Prompt注入",
+              "大规模"
+            ],
+            "found_keywords": [
+              "INC-042",
+              "大规模"
+            ],
+            "recall": 0.6667,
+            "precision": 0.0,
+            "accuracy": 0.6667,
+            "hallucination_rate": 0.2586,
+            "response_time_ms": 12775.01,
+            "pass": false
+          },
+          {
+            "query": "RAG检索Top-5命中率是多少？",
+            "expected_keywords": [
+              "87.3",
+              "Top-5",
+              "命中率"
+            ],
+            "found_keywords": [
+              "87.3",
+              "Top-5",
+              "命中率"
+            ],
+            "recall": 1.0,
+            "precision": 0.0,
+            "accuracy": 1.0,
+            "hallucination_rate": 0.4008,
+            "response_time_ms": 15141.08,
+            "pass": true
+          },
+          {
+            "query": "2026年3月15日发生了什么安全事件？",
+            "expected_keywords": [
+              "INC-037",
+              "幻觉",
+              "民法典"
+            ],
+            "found_keywords": [
+              "INC-037",
+              "幻觉",
+              "民法典"
+            ],
+            "recall": 1.0,
+            "precision": 0.0,
+            "accuracy": 1.0,
+            "hallucination_rate": 0.3394,
+            "response_time_ms": 15506.75,
+            "pass": true
+          }
+        ]
+      }
+    ]
+  }
+}
