@@ -39,7 +39,7 @@ def check_tool_permission(tool_name: str, role: str = DEFAULT_ROLE) -> tuple[boo
         return True, "权限校验通过"
     else:
         role_name = ROLE_PERMISSIONS[role]["name"]
-        return False, f"⚠️ 权限不足：您当前是【{role_name}】，无权使用【{tool_name}】工具，请联系管理员开通权限"
+        return False, f"[!] 权限不足：您当前是【{role_name}】，无权使用【{tool_name}】工具，请联系管理员开通权限"
 
 def get_role_info(role: str = DEFAULT_ROLE) -> dict:
     """获取角色信息"""

@@ -1,11 +1,10 @@
 import streamlit as st
 import tempfile
 import uuid
-from langchain.memory import ConversationBufferMemory
-from core.agent import agent_invoke
+from core.graph_agent import graph_invoke
 from core.rag import init_rag_retriever
+from langchain_core.messages import HumanMessage, AIMessage
 from security.permission import ROLE_PERMISSIONS, get_role_info
-from security.input_check import check_malicious_input
 from security.audit_log import read_audit_log
 
 # 页面配置
@@ -22,15 +21,13 @@ st.caption("Agent+RAG全链路安全防护 | 网安工具集 | 权限控制 | �
 # ---------------------- 初始化会话状态 ----------------------
 if "session_id" not in st.session_state:
     st.session_state.session_id = str(uuid.uuid4())
-if "memory" not in st.session_state:
-    st.session_state.memory = ConversationBufferMemory(memory_key="chat_history", return_messages=True)
 if "messages" not in st.session_state:
     st.session_state.messages = []
 if "current_role" not in st.session_state:
     st.session_state.current_role = "user"
 # 会话级retriever，每个用户独立
 if "retriever" not in st.session_state:
-    st.session_state.retriever = init_rag_retriever()
+    st.session_state.retriever = init_rag_retriever(persist=True)
 if "user_id" not in st.session_state:
     st.session_state.user_id = f"web_user_{st.session_state.session_id}"
 
@@ -51,7 +48,6 @@ with st.sidebar:
     if selected_role != st.session_state.current_role:
         st.session_state.current_role = selected_role
         st.session_state.messages = []
-        st.session_state.memory.clear()
         st.success(f"已切换为【{ROLE_PERMISSIONS[selected_role]['name']}】")
     
     # 权限说明
@@ -69,7 +65,7 @@ with st.sidebar:
             temp_path = f.name
         
         # 重新初始化当前会话的retriever
-        st.session_state.retriever = init_rag_retriever(temp_path)
+        st.session_state.retriever = init_rag_retriever(temp_path, persist=False, session_id=st.session_state.session_id)
         st.success(f"✅ 已成功加载文档：{uploaded_file.name}，当前会话已切换为该文档知识库")
     
     st.divider()
@@ -79,7 +75,6 @@ with st.sidebar:
     with col1:
         if st.button("清空对话", type="primary", use_container_width=True):
             st.session_state.messages = []
-            st.session_state.memory.clear()
             st.success("✅ 对话已清空")
     with col2:
         if st.button("刷新日志", use_container_width=True):
@@ -118,30 +113,30 @@ user_input = st.chat_input("请输入安全相关问题，支持：知识库问�
 
 # 处理用户输入
 if user_input:
-    # 添加用户消息
+    # Build chat history from PREVIOUS messages (before adding the new user message)
+    chat_history = []
+    for m in st.session_state.messages:
+        if m["role"] == "user":
+            chat_history.append(HumanMessage(content=m["content"]))
+        elif m["role"] == "assistant":
+            chat_history.append(AIMessage(content=m["content"]))
+
+    # Add user message to UI
     st.session_state.messages.append({"role": "user", "content": user_input})
     with st.chat_message("user"):
         st.markdown(user_input)
 
-    # 输入安全检测
-    is_risk, risk_msg = check_malicious_input(user_input)
-    if is_risk:
-        with st.chat_message("assistant"):
-            st.error(risk_msg)
-        st.session_state.messages.append({"role": "assistant", "content": f"❌ {risk_msg}"})
-    
-    # 调用Agent（直接传入会话级retriever）
-    else:
-        with st.chat_message("assistant"):
-            with st.spinner("Agent安全处理中..."):
-                answer = agent_invoke(
-                    user_input=user_input,
-                    role=st.session_state.current_role,
-                    custom_memory=st.session_state.memory,
-                    custom_retriever=st.session_state.retriever,
-                    user_id=st.session_state.user_id
-                )
-            st.markdown(answer)
-        
-        # 添加助手消息
-        st.session_state.messages.append({"role": "assistant", "content": answer})
+    # Call LangGraph agent (graph_invoke adds the new user_input to chat_history)
+    with st.chat_message("assistant"):
+        with st.spinner("Agent安全处理中..."):
+            answer = graph_invoke(
+                user_input=user_input,
+                role=st.session_state.current_role,
+                retriever=st.session_state.retriever,
+                user_id=st.session_state.user_id,
+                chat_history=chat_history,
+            )
+        st.markdown(answer)
+
+    # Add assistant message
+    st.session_state.messages.append({"role": "assistant", "content": answer})

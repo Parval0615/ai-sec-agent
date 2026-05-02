@@ -1,60 +1,314 @@
 from langchain_community.document_loaders import PyMuPDFLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_community.embeddings import HuggingFaceEmbeddings
-from langchain_community.vectorstores import FAISS
-from langchain_core.vectorstores import VectorStoreRetriever
+from langchain_community.vectorstores import Chroma
+from langchain_community.retrievers import BM25Retriever
 from core.config import *
+import os
+import shutil
 
-def init_rag_retriever(pdf_path: str = "docs/test.pdf") -> VectorStoreRetriever:
+# ===================== 重排序模型配置 =====================
+RERANK_MODEL_PATH = "BAAI/bge-reranker-base"
+ENABLE_RERANK = True
+
+rerank_model = None
+if ENABLE_RERANK:
+    try:
+        from sentence_transformers import CrossEncoder
+        rerank_model = CrossEncoder(RERANK_MODEL_PATH, local_files_only=True)
+        print("[OK] 离线重排序模型加载成功")
+    except Exception as e:
+        print(f"[WARN] 重排序模型加载失败：{str(e)}")
+        ENABLE_RERANK = False
+
+# ===================== 新增：上下文智能过滤 =====================
+# 文档结构预分析缓存
+_doc_guide_cache = {}
+
+def generate_document_guide(retriever_dict) -> str:
+    """Extract document taxonomy/classification info via LLM (cached, one-time cost)."""
+    docs = retriever_dict.get("docs", [])
+    if not docs:
+        return ""
+
+    doc_key = str(id(docs))
+    if doc_key in _doc_guide_cache:
+        return _doc_guide_cache[doc_key]
+
+    sample = "\n".join([d.page_content for d in docs[:3]])[:1500]
+    if not sample.strip():
+        return ""
+
+    try:
+        from langchain_openai import ChatOpenAI
+        from core.config import LLM_MODEL, LLM_API_BASE, LLM_API_KEY
+        llm = ChatOpenAI(
+            model=LLM_MODEL, temperature=0.0, max_tokens=200,
+            openai_api_base=LLM_API_BASE, openai_api_key=LLM_API_KEY
+        )
+        prompt = f"""分析文档片段，提取结构化信息。只输出结果，不解释。
+
+1. 文档类型与主题
+2. 如果有分类/类别/类型字段，列出所有可选值
+3. 如果有状态/阶段字段，列出所有可选值
+4. 关键命名实体
+
+文档：
+{sample}"""
+        guide = llm.invoke(prompt).content.strip()
+        _doc_guide_cache[doc_key] = guide
+        return guide
+    except Exception:
+        return ""
+
+
+def build_context_window(ranked_docs: list, max_chars: int = 2048) -> str:
+    """Build context string from ranked docs within char budget. Top docs get priority."""
+    context_parts = []
+    source_docs = []
+    used = 0
+    for idx, doc in enumerate(ranked_docs):
+        page_num = doc.metadata["page"]
+        file_name = doc.metadata["file_name"]
+        source_id = idx + 1
+        source_docs.append({
+            "id": source_id,
+            "file_name": file_name,
+            "page": page_num,
+            "content": doc.page_content[:100] + "..."
+        })
+        block = f"[{source_id}] 【{file_name} 第{page_num}页】\n{doc.page_content}\n"
+        if used + len(block) <= max_chars:
+            context_parts.append(block)
+            used += len(block)
+        else:
+            remaining = max_chars - used
+            if remaining > 100:
+                context_parts.append(block[:remaining] + "...")
+            break
+
+    # Build text enrichment: extract potential category values
+    full_text = "".join([d.page_content for d in ranked_docs])
+    categories_hint = _extract_categories_hint(full_text)
+
+    context = "\n".join(context_parts)
+    if categories_hint:
+        context = f"【文档关键信息预提取】\n{categories_hint}\n\n【文档原文片段】\n{context}"
+
+    return context, source_docs
+
+
+def _extract_categories_hint(text: str) -> str:
+    """Reconstruct table structure from garbled PDF text extraction.
+    Identifies potential category values at line endings and groups related data."""
+    import re
+    from collections import Counter, defaultdict
+
+    lines = [l.strip() for l in text.split('\n') if l.strip()]
+    if len(lines) < 4:
+        return ""
+
+    # ---- Phase 1: Extract potential category values from line endings ----
+    # Category values often appear as 2-4 char CJK strings at end of longer lines
+    ending_counter = Counter()
+    ending_examples = defaultdict(list)
+    for line in lines:
+        if 10 < len(line) < 120:
+            for end_len in [4, 3, 2]:
+                ending = line[-end_len:]
+                if re.match(r'^[一-鿿]{2,4}$', ending):
+                    ending_counter[ending] += 1
+                    desc = line[:-end_len].rstrip('，,、。.')
+                    ending_examples[ending].append(desc)
+                    break
+
+    # ---- Phase 2: Identify the most likely category values ----
+    # A true category value appears multiple times at line endings
+    likely_categories = [(cat, cnt) for cat, cnt in ending_counter.most_common(20) if cnt >= 2]
+
+    # ---- Phase 3: Build structured summary ----
+    hints = []
+    if likely_categories:
+        cat_names = [c for c, _ in likely_categories[:5]]
+        hints.append(f"【从文档中提取到的可能分类/类型值】: {', '.join(cat_names)}")
+
+        # For each category, show a few example rows
+        for cat, cnt in likely_categories[:4]:
+            examples = ending_examples[cat][:3]
+            if examples:
+                hints.append(f"\n类型「{cat}」(出现{cnt}次) 的条目示例:")
+                for ex in examples:
+                    short = ex[:60] + ("..." if len(ex) > 60 else "")
+                    hints.append(f"  - {short}")
+
+    # ---- Phase 4: Also extract short repeated lines (status values, headers) ----
+    short_lines = Counter([l for l in lines if 2 <= len(l) <= 6 and re.match(r'^[一-鿿]+$', l)])
+    repeated_short = [(w, c) for w, c in short_lines.most_common(10) if c >= 2]
+    if repeated_short:
+        short_vals = [w for w, _ in repeated_short[:6]]
+        if short_vals:
+            hints.append(f"\n【文档中重复出现的短词（可能是状态值/列名）】: {', '.join(short_vals)}")
+
+    return '\n'.join(hints) if hints else ""
+
+def init_rag_retriever(pdf_path: str = "docs/test.pdf", force_reindex: bool = False,
+                       session_id: str = None, persist: bool = True,
+                       chunk_size: int = None, chunk_overlap: int = None,
+                       enable_rerank: bool = None, vec_top_k: int = None,
+                       rerank_top_n: int = None):
+    """Initialize RAG retriever with Chroma vector store (persistent).
+
+    Args:
+        pdf_path: Path to the PDF file.
+        force_reindex: If True, delete existing index and rebuild.
+        session_id: Optional session ID for multi-tenant isolation (Streamlit).
+        persist: If True, persist to disk. If False, use in-memory (session uploads).
+        chunk_size: Override config CHUNK_SIZE. None = use config default.
+        chunk_overlap: Override config CHUNK_OVERLAP. None = use config default.
+        enable_rerank: Override ENABLE_RERANK. None = use module default.
+        vec_top_k: Override vector/bm25 top_k. None = use config TOP_K.
+        rerank_top_n: Override RERANK_TOP_N. None = use config default.
     """
-    生产级PDF解析+RAG检索器初始化
-    :param pdf_path: PDF文档路径
-    :return: 向量检索器
-    """
-    # 1. 升级为PyMuPDFLoader，业内最优PDF解析方案
-    # 优势：完美解析表格、复杂排版、长文档，自动提取页码、元信息，解析速度提升5倍
+    _chunk_size = chunk_size if chunk_size is not None else CHUNK_SIZE
+    _chunk_overlap = chunk_overlap if chunk_overlap is not None else CHUNK_OVERLAP
+    _enable_rerank = enable_rerank if enable_rerank is not None else ENABLE_RERANK
+    _vec_top_k = vec_top_k if vec_top_k is not None else TOP_K
+    _rerank_top_n = rerank_top_n if rerank_top_n is not None else RERANK_TOP_N
     loader = PyMuPDFLoader(pdf_path)
-    # 加载文档，自动携带页码、文档名等元信息
     docs = loader.load()
 
-    # 2. 优化分块逻辑，适配中文场景，避免句子被截断
+    for doc in docs:
+        doc.metadata["file_name"] = os.path.basename(pdf_path)
+
     splitter = RecursiveCharacterTextSplitter(
-        chunk_size=CHUNK_SIZE,
-        chunk_overlap=CHUNK_OVERLAP,
-        # 中文优先分隔符，解决中文句子被强行截断的问题
-        separators=["\n\n", "\n", "。", "！", "？", "；", "，", " ", ""],
+        chunk_size=_chunk_size,
+        chunk_overlap=_chunk_overlap,
+        separators=["\n\n\n", "\n\n", "\n", "。", "！", "？", "；", "，", " ", ""],
         is_separator_regex=False
     )
-    # 分块后自动保留页码、文档名等元信息
     splits = splitter.split_documents(docs)
 
-    # 3. 初始化嵌入模型+向量数据库
     embeddings = HuggingFaceEmbeddings(model_name=EMBEDDING_MODEL)
-    vector_store = FAISS.from_documents(splits, embeddings)
 
-    # 4. 返回检索器，保留元信息
-    return vector_store.as_retriever(
-        search_kwargs={"k": TOP_K},
-        # 开启元信息返回，后续可直接溯源页码
-        return_source_documents=True
+    # Collection name: PDF filename + chunk params + optional session suffix
+    # Encoding chunk_size/overlap ensures different experiment configs use separate indexes
+    pdf_basename = os.path.splitext(os.path.basename(pdf_path))[0]
+    parts = [pdf_basename, f"cs{_chunk_size}", f"co{_chunk_overlap}"]
+    collection_name = "_".join(parts)
+    if session_id:
+        collection_name = f"{collection_name}_{session_id}"
+
+    if persist:
+        persist_dir = os.path.join("chroma_db")
+        os.makedirs(persist_dir, exist_ok=True)
+
+        # Force reindex: delete existing collection if present
+        if force_reindex:
+            existing_path = os.path.join(persist_dir, collection_name)
+            if os.path.exists(existing_path):
+                shutil.rmtree(existing_path)
+                print(f"[*] 已清除旧索引: {collection_name}")
+
+        # Try loading existing collection first (avoid re-embedding)
+        try:
+            chroma_db = Chroma(
+                collection_name=collection_name,
+                embedding_function=embeddings,
+                persist_directory=persist_dir
+            )
+            if chroma_db._collection.count() > 0:
+                print(f"[OK] Chroma 从磁盘加载已有索引: {collection_name} ({chroma_db._collection.count()} chunks)")
+            else:
+                # Empty collection, populate it
+                chroma_db = Chroma.from_documents(
+                    documents=splits, embedding=embeddings,
+                    collection_name=collection_name, persist_directory=persist_dir
+                )
+                print(f"[OK] Chroma 持久化索引已创建: {collection_name} ({len(splits)} chunks)")
+        except Exception:
+            # Collection doesn't exist yet, create it
+            chroma_db = Chroma.from_documents(
+                documents=splits, embedding=embeddings,
+                collection_name=collection_name, persist_directory=persist_dir
+            )
+            print(f"[OK] Chroma 持久化索引已创建: {collection_name} ({len(splits)} chunks)")
+    else:
+        # Ephemeral in-memory mode (for session-level temp uploads)
+        chroma_db = Chroma.from_documents(
+            documents=splits,
+            embedding=embeddings,
+            collection_name=collection_name
+        )
+
+    vec_retriever = chroma_db.as_retriever(
+        search_type="mmr",
+        search_kwargs={"k": _vec_top_k, "fetch_k": max(_vec_top_k * 3, 10), "lambda_mult": 0.7}
     )
 
-def rag_query(retriever: VectorStoreRetriever, query: str) -> str:
-    """
-    RAG检索查询，自动携带来源页码信息
-    :param retriever: 向量检索器
-    :param query: 用户问题
-    :return: 检索到的文档内容+来源信息
-    """
-    # 检索文档
-    source_docs = retriever.invoke(query)
-    # 拼接内容+来源页码，为后续溯源做准备
-    result_content = []
-    for idx, doc in enumerate(source_docs):
-        # 提取页码、文档名
-        page_num = doc.metadata.get("page", 0) + 1  # 页码从1开始，符合用户阅读习惯
-        file_name = doc.metadata.get("file_name", "未知文档")
-        # 拼接内容+来源标注
-        result_content.append(f"【来源：{file_name} 第{page_num}页】\n{doc.page_content}\n")
+    bm25_retriever = BM25Retriever.from_documents(splits)
+    bm25_retriever.k = _vec_top_k
+
+    return {
+        "bm25": bm25_retriever,
+        "vector": vec_retriever,
+        "docs": splits,
+        "chroma_db": chroma_db,
+        "collection_name": collection_name,
+        "enable_rerank": _enable_rerank,
+        "rerank_top_n": _rerank_top_n
+    }
+
+def rerank_docs(query: str, docs, top_n: int = RERANK_TOP_N):
+    if not ENABLE_RERANK or not rerank_model or not docs:
+        return docs[:top_n]
     
-    return "\n".join(result_content)
+    pairs = [[query, doc.page_content] for doc in docs]
+    scores = rerank_model.predict(pairs)
+    sorted_docs = sorted(zip(docs, scores), key=lambda x: x[1], reverse=True)
+    return [doc for doc, score in sorted_docs[:top_n]]
+
+def rag_query(retriever_dict, query: str,
+              enable_rerank: bool = None, rerank_top_n: int = None):
+    _enable_rerank = enable_rerank if enable_rerank is not None else retriever_dict.get("enable_rerank", ENABLE_RERANK)
+    _rerank_top_n = rerank_top_n if rerank_top_n is not None else retriever_dict.get("rerank_top_n", RERANK_TOP_N)
+    strategy = retriever_dict.get("strategy", None)
+    bm25_retriever = retriever_dict["bm25"]
+    vec_retriever = retriever_dict["vector"]
+
+    if strategy == "vector_only":
+        vec_docs = vec_retriever.invoke(query)
+        all_docs = list({d.page_content: d for d in vec_docs}.values())
+    elif strategy == "bm25_only":
+        bm25_docs = bm25_retriever.invoke(query)
+        all_docs = list({d.page_content: d for d in bm25_docs}.values())
+    else:
+        bm25_docs = bm25_retriever.invoke(query)
+        vec_docs = vec_retriever.invoke(query)
+
+        # RRF (Reciprocal Rank Fusion) merge -- k=60 is the standard parameter
+        def _rrf_merge(vec_docs, bm25_docs, k=60):
+            scores = {}
+            doc_map = {}
+            for rank, doc in enumerate(vec_docs):
+                doc_id = f"{doc.metadata['page']}_{doc.page_content[:50]}"
+                scores[doc_id] = scores.get(doc_id, 0) + 1.0 / (k + rank + 1)
+                doc_map[doc_id] = doc
+            for rank, doc in enumerate(bm25_docs):
+                doc_id = f"{doc.metadata['page']}_{doc.page_content[:50]}"
+                scores[doc_id] = scores.get(doc_id, 0) + 1.0 / (k + rank + 1)
+                doc_map[doc_id] = doc
+            return [doc_map[did] for did, _ in sorted(scores.items(), key=lambda x: x[1], reverse=True)]
+
+        all_docs = _rrf_merge(vec_docs, bm25_docs)
+
+    if not all_docs:
+        return "未找到相关内容", []
+
+    # Honor enable_rerank from retriever (set per-experiment); skip rerank if strategy is single-source
+    if strategy in ("vector_only", "bm25_only") or not _enable_rerank:
+        ranked_docs = all_docs[:_rerank_top_n]
+    else:
+        ranked_docs = rerank_docs(query, all_docs, _rerank_top_n)
+
+    context, source_docs = build_context_window(ranked_docs)
+    return context, source_docs

@@ -1,7 +1,11 @@
-from core.agent import agent_invoke, memory
-from security.input_check import check_malicious_input
+import warnings
+warnings.filterwarnings("ignore")
+import os
+os.environ["HF_HUB_DISABLE_SYMLINKS_WARNING"] = "1"
+from core.graph_agent import graph_invoke
 from security.permission import ROLE_PERMISSIONS, get_role_info, DEFAULT_ROLE
 from security.audit_log import read_audit_log
+from langchain_core.messages import HumanMessage, AIMessage
 
 if __name__ == "__main__":
     print("="*70)
@@ -12,6 +16,7 @@ if __name__ == "__main__":
 
     current_role = DEFAULT_ROLE
     current_user_id = "cli_user"
+    chat_history = []
 
     while True:
         user_input = input("\n请输入问题：").strip()
@@ -21,8 +26,8 @@ if __name__ == "__main__":
             break
         # 清空记忆
         if user_input.lower() == "clear":
-            memory.clear()
-            print("✅ 对话记忆已清空")
+            chat_history.clear()
+            print("[OK] 对话记忆已清空")
             continue
         # 切换角色
         if user_input.lower() == "role":
@@ -32,10 +37,10 @@ if __name__ == "__main__":
             new_role = input("请输入角色代码：").strip().lower()
             if new_role in ROLE_PERMISSIONS:
                 current_role = new_role
-                memory.clear()
-                print(f"✅ 已切换为【{ROLE_PERMISSIONS[current_role]['name']}】，记忆已清空")
+                chat_history.clear()
+                print(f"[OK] 已切换为【{ROLE_PERMISSIONS[current_role]['name']}】，记忆已清空")
             else:
-                print("❌ 无效角色代码")
+                print("[X] 无效角色代码")
             continue
         # 查看审计日志
         if user_input.lower() == "log":
@@ -49,19 +54,17 @@ if __name__ == "__main__":
             print("请输入有效问题")
             continue
 
-        # 输入安全检测
-        is_risk, risk_msg = check_malicious_input(user_input)
-        if is_risk:
-            print(f"【安全拦截】{risk_msg}")
-            continue
-
         # 调用Agent
         try:
-            answer = agent_invoke(
+            answer = graph_invoke(
                 user_input=user_input,
                 role=current_role,
-                user_id=current_user_id
+                user_id=current_user_id,
+                chat_history=chat_history,
             )
             print("\n【Agent回答】：", answer)
+            # Update history
+            chat_history.append(HumanMessage(content=user_input))
+            chat_history.append(AIMessage(content=answer))
         except Exception as e:
             print("\n【系统错误】：", str(e))

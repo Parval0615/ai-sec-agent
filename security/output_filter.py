@@ -49,13 +49,25 @@ def mask_sensitive_info(text: str) -> str:
         text = re.sub(pattern, lambda m: (m.group()[:3] + "****" + m.group()[-4:]) if len(m.group())>7 else "****", text)
     return text
 
-def check_output_compliance(text: str) -> tuple[bool, str]:
+def check_output_compliance(text: str, is_rag_context: bool = False) -> tuple[bool, str]:
     """
-    输出内容合规校验（优化版，避免误判）
-    返回：(是否合规, 提示信息)
+    输出内容合规校验
+    is_rag_context=True 时仅拦截完整可执行payload，允许安全文档中的描述性内容
     """
     text_lower = text.lower()
-    for pattern in ILLEGAL_PATTERNS:
+
+    if is_rag_context:
+        # RAG/教育场景：仅拦截完整可执行payload和黑产关键词
+        EDU_SAFE_PATTERNS = [
+            r"xp_cmdshell", r"exec\s+master\.", r"execute\s+sp_",
+            r"shell_exec\(", r"passthru\(", r"popen\(",
+            r"免杀", r"远控木马", r"钓鱼网站", r"脱壳破解", r"暴力破解"
+        ]
+        patterns = EDU_SAFE_PATTERNS
+    else:
+        patterns = ILLEGAL_PATTERNS
+
+    for pattern in patterns:
         if re.search(pattern, text_lower):
-            return False, "⚠️ 输出内容不合规，包含高危操作代码/违规内容，已拦截"
+            return False, "[!] 输出内容不合规，包含高危操作代码/违规内容，已拦截"
     return True, "输出内容合规"

@@ -1,11 +1,14 @@
 langchain
 langchain-community
 langchain-core
-pypdf
-faiss-cpu
+langchain-openai
+rank_bm25
+chromadb
 sentence-transformers
 streamlit
 python-dotenv
 torch
-ollama
+reportlab
 pymupdf
+pypdf
+langgraph

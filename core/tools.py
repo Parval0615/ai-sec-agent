@@ -1,5 +1,5 @@
 from langchain_core.tools import tool
-from pydantic import BaseModel, Field
+from pydantic.v1 import BaseModel, Field
 from security.output_filter import detect_sensitive_info
 
 # ---------------------- 工具输入参数严格定义 ----------------------
@@ -50,29 +50,29 @@ def simple_vuln_scan(url: str) -> str:
     if not url.startswith(("http://", "https://")):
         if "." in url:
             url = f"https://{url}"
-            report += f"ℹ️ 自动补全URL为：{url}\n\n"
+            report += f"[i] 自动补全URL为：{url}\n\n"
         else:
-            return "❌ 格式错误：请输入以 http:// 或 https:// 开头的有效URL"
+            return "[X] 格式错误：请输入以 http:// 或 https:// 开头的有效URL"
     
     # 漏洞规则检测
     risk_count = 0
     if "?" in url:
-        report += "⚠️ 风险点1：URL携带查询参数，存在SQL注入、XSS攻击风险\n"
+        report += "[!] 风险点1：URL携带查询参数，存在SQL注入、XSS攻击风险\n"
         risk_count += 1
     if "login" in url.lower() or "signin" in url.lower():
-        report += "⚠️ 风险点2：登录页面，需检查弱口令、暴力破解风险\n"
+        report += "[!] 风险点2：登录页面，需检查弱口令、暴力破解风险\n"
         risk_count += 1
     if "admin" in url.lower() or "manage" in url.lower():
-        report += "⚠️ 风险点3：后台管理路径，需验证权限控制、未授权访问风险\n"
+        report += "[!] 风险点3：后台管理路径，需验证权限控制、未授权访问风险\n"
         risk_count += 1
     if "api" in url.lower():
-        report += "⚠️ 风险点4：API接口，需检查越权访问、数据泄露风险\n"
+        report += "[!] 风险点4：API接口，需检查越权访问、数据泄露风险\n"
         risk_count += 1
     
     if risk_count == 0:
-        report += "✅ 未检测到明显的基础风险点\n"
+        report += "[OK] 未检测到明显的基础风险点\n"
     
-    report += f"\n📊 扫描结果：共发现{risk_count}个潜在风险点"
+    report += f"\n[*] 扫描结果：共发现{risk_count}个潜在风险点"
     report += "\n\n注：本扫描为演示版规则检测，仅用于学习，不代表专业安全评估"
     return report
 
@@ -101,11 +101,11 @@ def check_sql_injection(content: str) -> str:
     
     report = f"【SQL注入检测报告】\n检测内容：{content[:100]}{'...' if len(content)>100 else ''}\n\n"
     if not risk_list:
-        report += "✅ 未检测到明显的SQL注入风险特征"
+        report += "[OK] 未检测到明显的SQL注入风险特征"
     else:
-        report += "❌ 检测到SQL注入风险，风险特征如下：\n"
+        report += "[X] 检测到SQL注入风险，风险特征如下：\n"
         report += "\n".join(risk_list)
-        report += "\n\n⚠️ 该内容存在SQL注入攻击风险，禁止直接传入数据库执行"
+        report += "\n\n[!] 该内容存在SQL注入攻击风险，禁止直接传入数据库执行"
     
     return report
 

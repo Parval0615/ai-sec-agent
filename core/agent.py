@@ -1,6 +1,5 @@
-from langchain_community.llms import Ollama
-from langchain.memory import ConversationBufferMemory
-from core.config import LLM_MODEL
+from langchain_openai import ChatOpenAI
+from core.config import LLM_MODEL, LLM_API_BASE, LLM_API_KEY
 from core.tools import SEC_AGENT_TOOLS
 from core.rag import init_rag_retriever, rag_query
 from security.permission import check_tool_permission, DEFAULT_ROLE, get_allowed_tools
@@ -8,22 +7,87 @@ from security.input_check import check_malicious_input
 from security.output_filter import mask_sensitive_info, check_output_compliance
 from security.audit_log import write_audit_log
 
-# 1. 初始化大模型
-llm = Ollama(model=LLM_MODEL, temperature=0.05)
 
-# 2. 全局对话记忆（命令行用）
+class ConversationBufferMemory:
+    """Minimal replacement for langchain.memory.ConversationBufferMemory (removed in langchain 1.x)."""
+    def __init__(self, memory_key="chat_history", return_messages=True):
+        self.memory_key = memory_key
+        self.return_messages = return_messages
+        self._history = []
+
+    def save_context(self, inputs: dict, outputs: dict):
+        self._history.append({"input": inputs, "output": outputs})
+
+    def clear(self):
+        self._history.clear()
+
+def fact_check(answer: str, context: str, min_phrase_match_ratio: float = 0.05) -> str:
+    """Verify answer is grounded in context. Uses Chinese character n-gram containment.
+    Only blocks answers clearly disconnected from the context (very low phrase match)."""
+    import re
+
+    # Skip check for clearly negative answers, very short outputs, or fallback messages
+    if "未找到" in answer or "未找到相关信息" in answer or len(answer) < 10:
+        return answer
+
+    def extract_key_phrases(text):
+        clean = re.sub(r'[^一-鿿\w]', '', text)
+        phrases = set()
+        for length in [2, 3, 4]:
+            for i in range(len(clean) - length + 1):
+                phrases.add(clean[i:i+length])
+        return phrases
+
+    answer_phrases = extract_key_phrases(answer)
+    if len(answer_phrases) < 8:
+        return answer
+
+    context_clean = re.sub(r'[^一-鿿\w]', '', context)
+
+    matched = sum(1 for p in answer_phrases if p in context_clean)
+    ratio = matched / len(answer_phrases) if answer_phrases else 1.0
+
+    # Only block answers with extremely low phrase overlap (clear hallucination)
+    if ratio < min_phrase_match_ratio:
+        return "文档中未找到与该问题明确对应的内容。"
+    return answer
+
+# ===================== 大模型初始化（终极零随机配置） =====================
+llm = ChatOpenAI(
+    model=LLM_MODEL,
+    temperature=0.0,
+    max_tokens=1024,
+    openai_api_base=LLM_API_BASE,
+    openai_api_key=LLM_API_KEY
+)
+
+# 2. 全局对话记忆
 memory = ConversationBufferMemory(
     memory_key="chat_history",
     return_messages=True
 )
 
-# 3. 工具映射字典
+# 3. 工具映射
 TOOL_MAP = {tool.name: tool for tool in SEC_AGENT_TOOLS}
 
-# 4. 命令行默认retriever
-default_retriever = init_rag_retriever()
+# 4. 默认检索器（延迟加载，避免每次import都初始化embedding模型）
+_default_retriever = None
+_retriever_init_failed = False
 
-# 5. 终版Agent核心逻辑（RAG直接集成，彻底解决问题）
+def _get_default_retriever():
+    global _default_retriever, _retriever_init_failed
+    if _retriever_init_failed:
+        return None
+    if _default_retriever is None:
+        try:
+            _default_retriever = init_rag_retriever()
+        except Exception as e:
+            _retriever_init_failed = True
+            print(f"[WARN] RAG retriever init failed: {e}")
+            return None
+    return _default_retriever
+
+# 5. 修复版Agent
 def agent_invoke(
     user_input: str,
     role: str = DEFAULT_ROLE,
@@ -31,147 +95,133 @@ def agent_invoke(
     custom_retriever=None,
     user_id: str = "default"
 ) -> str:
-    # 记忆处理
     use_memory = custom_memory if custom_memory else memory
-    # 检索器处理：优先用会话级retriever，没有则用默认全局retriever
-    use_retriever = custom_retriever if custom_retriever else default_retriever
-    # 获取当前角色允许的工具列表
-    allowed_tools = get_allowed_tools(role)
+    use_retriever = custom_retriever if custom_retriever else _get_default_retriever()
     
-    # 第一步：输入安全检测+审计
+    # 输入安全检测
     is_risk, risk_msg = check_malicious_input(user_input)
     if is_risk:
-        write_audit_log(
-            user_id=user_id, role=role, operation="安全拦截",
-            input_content=user_input, result=risk_msg, risk_level="high"
-        )
+        write_audit_log(user_id, role, "安全拦截", user_input, risk_msg, "high")
         return risk_msg
     
-    # 第二步：精准意图识别
     user_input_lower = user_input.lower()
-    tool_result = ""
     operation_type = "对话"
     
-    # ---------------------- 核心修复：RAG知识库问答直接处理，不走工具调用 ----------------------
-    if any(keyword in user_input_lower for keyword in ["pdf", "文档", "资料", "写了什么", "内容是什么", "文档里"]):
-        # 直接调用RAG检索，彻底避开工具参数传递问题
-        rag_content = rag_query(use_retriever, user_input)
-        tool_result = rag_content
-        operation_type = "RAG知识库问答"
-    
-    # ---------------------- 其他安全工具正常调用 ----------------------
-    # 1. SQL注入检测意图
-    elif any(keyword in user_input_lower for keyword in ["sql注入", "注入检测", "sql检测", "注入风险", "sql漏洞"]):
+    # ---------------------- 智能路由：工具优先 -> RAG兜底 ----------------------
+    tool_matched = False
+
+    if any(keyword in user_input_lower for keyword in ["sql注入", "注入检测"]):
+        tool_matched = True
         tool_to_call = "check_sql_injection"
-        # 权限校验
         has_permission, permission_msg = check_tool_permission(tool_to_call, role)
         if not has_permission:
-            write_audit_log(
-                user_id=user_id, role=role, operation="权限拒绝",
-                input_content=user_input, result=permission_msg, risk_level="low"
-            )
+            write_audit_log(user_id, role, "权限拒绝", user_input, permission_msg, "low")
             return permission_msg
-        # 调用工具
         try:
             tool_result = TOOL_MAP[tool_to_call].invoke({"content": user_input})
-            operation_type = "工具调用"
+            final_answer = llm.invoke(f"整理成简洁专业的回答：\n{tool_result}").content
         except Exception as e:
-            tool_result = f"工具调用出错：{str(e)}"
-    
-    # 2. 漏洞扫描意图
-    elif any(keyword in user_input_lower for keyword in ["扫描漏洞", "网站扫描", "url扫描", "漏洞检测", "web扫描"]):
+            final_answer = f"工具调用出错：{str(e)}"
+
+    elif any(keyword in user_input_lower for keyword in ["扫描", "漏洞"]):
+        tool_matched = True
         tool_to_call = "simple_vuln_scan"
-        # 权限校验
         has_permission, permission_msg = check_tool_permission(tool_to_call, role)
         if not has_permission:
-            write_audit_log(
-                user_id=user_id, role=role, operation="权限拒绝",
-                input_content=user_input, result=permission_msg, risk_level="low"
-            )
+            write_audit_log(user_id, role, "权限拒绝", user_input, permission_msg, "low")
             return permission_msg
-        # 提取URL
         import re
         url_match = re.search(r"https?://[^\s]+", user_input)
         if not url_match:
-            result = "请提供以 http:// 或 https:// 开头的完整URL"
-            write_audit_log(
-                user_id=user_id, role=role, operation="对话",
-                input_content=user_input, result=result, risk_level="normal"
-            )
-            return result
-        # 调用工具
-        try:
-            tool_result = TOOL_MAP[tool_to_call].invoke({"url": url_match.group()})
-            operation_type = "工具调用"
-        except Exception as e:
-            tool_result = f"工具调用出错：{str(e)}"
-    
-    # 3. 敏感信息检测意图
-    elif any(keyword in user_input_lower for keyword in ["检测敏感", "检测隐私", "手机号检测", "身份证检测", "敏感信息", "隐私信息"]):
-        # 判断是检测文本还是PDF
-        if any(keyword in user_input_lower for keyword in ["pdf", "文档", "上传的文件"]):
-            # 网页端：直接用会话级retriever处理
-            all_docs = use_retriever.invoke("")
+            final_answer = "请提供完整URL"
+        else:
+            try:
+                tool_result = TOOL_MAP[tool_to_call].invoke({"url": url_match.group()})
+                final_answer = llm.invoke(f"整理成简洁专业的回答：\n{tool_result}").content
+            except Exception as e:
+                final_answer = f"工具调用出错：{str(e)}"
+
+    elif any(keyword in user_input_lower for keyword in ["检测敏感", "隐私"]):
+        tool_matched = True
+        if any(keyword in user_input_lower for keyword in ["pdf", "文档"]):
+            all_docs = use_retriever["bm25"].invoke("")
             full_text = "\n".join([doc.page_content for doc in all_docs])
             from security.output_filter import detect_sensitive_info
             has_risk, result = detect_sensitive_info(full_text)
-            tool_result = result
-            operation_type = "PDF敏感信息检测"
+            final_answer = llm.invoke(f"整理成简洁专业的回答：\n{result}").content
         else:
-            # 检测文本敏感信息
             tool_to_call = "check_sensitive_information"
-            # 权限校验
             has_permission, permission_msg = check_tool_permission(tool_to_call, role)
             if not has_permission:
-                write_audit_log(
-                    user_id=user_id, role=role, operation="权限拒绝",
-                    input_content=user_input, result=permission_msg, risk_level="low"
-                )
+                write_audit_log(user_id, role, "权限拒绝", user_input, permission_msg, "low")
                 return permission_msg
-            # 调用工具
             try:
                 tool_result = TOOL_MAP[tool_to_call].invoke({"text": user_input})
-                operation_type = "工具调用"
+                final_answer = llm.invoke(f"整理成简洁专业的回答：\n{tool_result}").content
             except Exception as e:
-                tool_result = f"工具调用出错：{str(e)}"
-    
-    # ---------------------- 大模型生成最终回答 ----------------------
-    if tool_result:
-        prompt = f"""
-你是专业的AI安全智能助手，根据以下内容，整理成简洁、专业的最终回答。
-禁止编造内容外的任何信息，禁止添加无关信息，禁止输出高危操作代码。
+                final_answer = f"工具调用出错：{str(e)}"
 
-参考内容：
-{tool_result}
+    # RAG兜底：retriever有文档且非工具查询 -> 自动走RAG
+    if not tool_matched:
+        has_docs = use_retriever and use_retriever.get("docs")
+        if has_docs:
+            context, source_docs = rag_query(use_retriever, user_input)
+
+            # 检查检索返回是否有效（非空且非"未找到"）
+            if source_docs and "未找到" not in context:
+                prompt = f"""你是文档分析助手。请根据【参考内容】回答用户问题。
+
+参考内容来自PDF表格提取，数据格式说明：
+- 表格的列值（如分类、类型、状态）通常出现在每行描述的末尾（最后2-4个字）
+- 例如"xxx内容违规"中"内容违规"是类型值，"xxx答案问题"中"答案问题"是类型值
+- 提示区的【可能分类/类型值】列出了文档中提取到的候选类型
+- 区分"类型/分类的固定枚举值"和"具体的条目描述"
+
+规则：
+1. 先看提示区了解文档有哪些分类/类型，再到原文中找对应条目的描述
+2. 只能根据参考内容回答，不编造。找不到时回答「文档中未找到相关信息」
+3. 简洁回答，先概括再补充细节
+
+【参考内容】
+{context}
 
 用户问题：{user_input}
 """
-    else:
-        prompt = f"""
-你是专业的AI安全智能助手，仅回答与网络安全、信息安全、数据合规相关的问题。
-无关问题请礼貌拒绝，禁止编造内容，禁止输出高危操作代码。
 
-用户问题：{user_input}
-"""
+                try:
+                    llm_response = llm.invoke(prompt)
+                    if hasattr(llm_response, 'content') and llm_response.content:
+                        final_answer = llm_response.content if isinstance(llm_response.content, str) else str(llm_response.content)
+                    else:
+                        final_answer = "文档中未找到相关信息。"
+                except Exception:
+                    final_answer = "文档中未找到相关信息。"
+
+                final_answer = fact_check(final_answer, context)
+
+                if source_docs and "未找到" not in final_answer:
+                    final_answer += "\n\n---\n[*] 引用来源：\n"
+                    for doc in source_docs:
+                        final_answer += f"[{doc['id']}] {doc['file_name']} 第{doc['page']}页\n"
+
+                operation_type = "RAG知识库问答"
+            else:
+                final_answer = "我是AI安全智能助手，支持：\n1. PDF文档问答（直接问我文档内容即可）\n2. 敏感信息检测（如：帮我检测敏感信息）\n3. SQL注入检测（如：帮我检测SQL注入）\n4. 网站漏洞扫描（如：帮我扫描 https://example.com）\n\n请提出相关问题。"
+        else:
+            final_answer = "我是AI安全智能助手，目前没有加载知识库文档。请上传PDF文档后提问，或使用以下功能：\n1. 敏感信息检测\n2. SQL注入检测\n3. 网站漏洞扫描\n\n请提出相关问题。"
     
-    final_answer = llm.invoke(prompt)
-    
-    # 输出合规校验+脱敏
-    is_compliance, compliance_msg = check_output_compliance(final_answer)
+    # 输出校验 -- RAG场景使用宽松规则，允许安全文档中的描述性安全术语
+    is_compliance, compliance_msg = check_output_compliance(
+        final_answer, is_rag_context=(operation_type == "RAG知识库问答")
+    )
     if not is_compliance:
-        write_audit_log(
-            user_id=user_id, role=role, operation="输出拦截",
-            input_content=user_input, result=compliance_msg, risk_level="high"
-        )
+        write_audit_log(user_id, role, "输出拦截", user_input, compliance_msg, "high")
         return compliance_msg
     
     final_answer = mask_sensitive_info(final_answer)
     
-    # 保存记忆+审计
+    # 保存记忆
     use_memory.save_context({"input": user_input}, {"output": final_answer})
-    write_audit_log(
-        user_id=user_id, role=role, operation=operation_type,
-        input_content=user_input, result=final_answer, risk_level="normal"
-    )
+    write_audit_log(user_id, role, operation_type, user_input, final_answer, "normal")
     
     return final_answer

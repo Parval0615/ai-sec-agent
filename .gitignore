@@ -6,5 +6,6 @@ __pycache__/
 .env
 docs/
 faiss_index/
+chroma_db/
 *.pdf
 .DS_Store

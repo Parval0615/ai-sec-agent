@@ -21,6 +21,6 @@ def check_malicious_input(user_input: str) -> tuple[bool, str]:
     
     for keyword in MALICIOUS_KEYWORDS:
         if keyword.lower() in input_lower:
-            return True, f"⚠️ 检测到恶意攻击指令，已拦截。命中风险关键词：{keyword}"
+            return True, f"[!] 检测到恶意攻击指令，已拦截。命中风险关键词：{keyword}"
     
     return False, "输入安全"
