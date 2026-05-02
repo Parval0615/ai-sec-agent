@@ -314,6 +314,28 @@
 | 工具失败自动重试与恢复 | [OK] | 结构化错误+Self-healing prompt+ReAct循环(最多3次工具调用) |
 | ReAct/Function Calling原理 | [OK] | 见 QA_log.md 苏格拉底讨论 |
 
+### Phase 2 完成总结
+
+**完成状态**: ✅ 全部核心任务 + 完成标准已达成
+
+| # | 任务 | 状态 | 关键实现 |
+|---|------|:---:|------|
+| 1 | LangGraph StateGraph 重写 | ✅ | 5节点：guardrail/agent/tools/output_filter/finalize |
+| 1b | 条件分支（恶意→专用链） | ✅ | guardrail 检测到恶意输入跳过 agent 直通 finalize |
+| 1c | 循环调用（关键词重试检索） | ✅ | `[SEARCH_RETRY]` + system prompt 引导 LLM 换词重试 |
+| 2a | 并行工具调用 | ✅ | `bind_tools` + system prompt 并行指引 |
+| 2b | 长文本 LLM 摘要 | ✅ | `_summarize_tool_result()` 保留全量数据点 |
+| 2c | 错误自愈 | ✅ | `_format_tool_error()` 结构化错误 + Self-healing prompt |
+| 3a | 滑动窗口 + 对话摘要 | ✅ | `max_history` 裁剪 + `_generate_summary()` 压缩 |
+| 3b | 精准遗忘 | ✅ | `FORGET_PATTERN` + 分词匹配删除 |
+| 3c | Checkpointer 持久化 | ✅ | `SqliteSaver` + `thread_id` + `get_thread_messages()` |
+
+| 完成标准 | 状态 | 说明 |
+|------|:---:|------|
+| LangGraph Studio 可视化 | N/A | 无 Studio License，代码可通过 StateGraph 结构理解工作流 |
+| 工具失败后自动重试与恢复 | ✅ | 5轮ReAct测试通过，结构化错误引导LLM修正参数 |
+| ReAct/Function Calling 原理 | ✅ | 见 QA_Log 苏格拉底讨论记录 |
+
 ### 明日任务
 - [ ] OCR 扫描件支持（Phase 1 遗留）
 - [ ] Phase 3 启动：Prompt注入攻防靶场 + 输入意图分类器

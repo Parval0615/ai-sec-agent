@@ -1,5 +1,53 @@
 # QA Log
 
+## 2026-05-02
+
+### 苏格拉底问答：Checkpointer 双路径、错误自愈、关键词重试、ReAct vs 关键词路由
+
+围绕 Phase 2 Day 4-5 四个新特性逐层讨论。
+
+**1. Checkpointer 双路径：为什么有 chat_history 时用唯一 thread_id**
+
+用户推演了"有 chat_history 用固定 thread_id"的后果：第一次 checkpoint 存 2 条消息，第二次追加完整 chat_history+新消息（4 条），第三次追加 6 条……第 N 次调用后在 checkpoint 里追加约 2N 条消息，"你好"出现 3 次。增长模式是 O(n²) 二次增长——因为 `add_messages` reducer 把 state 里的消息全部追加到 checkpoint，不做去重。
+
+解决方案：有 `chat_history` 时每次生成唯一 `thread_id`（`uuid4().hex[:8]` 后缀），checkpointer 找不到旧状态，从零开始——避免重复叠加。无 `chat_history` 时用固定 `thread_id`，checkpointer 的 `add_messages` 只在已有消息后面追加新的 HumanMessage + AI 回答，天然正确。
+
+关键认知：Streamlit 旧代码传 `chat_history` → 每次唯一 thread_id → checkpoint 只写不读 → 持久化名存实亡。改为纯 checkpointer 模式（固定 thread_id + `get_thread_messages` 恢复）后，SQLite 才真正发挥作用。
+
+**2. 错误自愈：结构化错误信息的三个必要条件**
+
+旧错误消息 `[ERROR] TypeError: ... Try different parameters.` 漏了三件事中的两件：工具名（不知道哪个调用出错）、实际参数（不知道自己传了什么）、修复提示（仅一句模糊的 "try different"）。LLM 面对多条并行调用时，无法将错误对应到具体调用，也就无法修正。
+
+新 `_format_tool_error()` 补齐三件套：`Tool 'xxx' failed` / `Called with: {"url": "example.com"}` / `Hint: Check that 'url' starts with http://`。每个工具一个专属 Hint。加上 system prompt 的 Self-healing 段明确指引 LLM "读 Hint → 改参数 → 重试"。
+
+**3. 关键词重试检索：为什么第一遍没找到不能直接告诉用户**
+
+用户列出三种策略：(1) 换词重试 (2) 调其他工具 (3) 告诉用户没找到。我们选策略 (1)。
+
+选 (1) 而非 (2)：search_document 和其他工具职责不同，调了也无用。
+选 (1) 而非 (3)：第一遍没找到可能是用词不匹配（用户说"数据保护"而文档写"隐私保护"），换近义词重试可能命中。直接告诉用户会错失正确答案。
+
+实现：`search_document` 返回 `[SEARCH_RETRY]` 标记 + 具体换词建议，system prompt 加 "Keyword retry" 段，最多 2 次重试。测试验证 LLM 自动从"安全策略"换到"策略"再换到"安全"，最终找到相关内容。
+
+**4. ReAct (Function Calling) vs 关键词路由：架构级差异**
+
+用户推演了同一个输入 "帮我检查一下网站有没有SQL注入风险 https://example.com" 在两种架构下的行为：
+- 关键词路由：命中第一个 `if "sql注入"`，只调 SQL 工具，网站扫描被忽略
+- Function Calling：LLM 理解意图 = SQL检测 + 漏洞扫描，一次返回两个 tool_call，并行执行并合并结果
+
+核心差异：关键词路由是字符串匹配（只看到关键词，看不到组合意图），Function Calling 是语义理解（LLM 从完整句子中提取要做什么 + 参数怎么填 + 能不能并行）。这也是为什么 ReAct Pattern（Think → Act → Observe → Think → ...）比一次性路由更强大：每一步都基于上一步的观察结果重新推理，而非第一次匹配后就定格。
+
+### 关联引用
+- `core/graph_agent.py:L310-L370`: graph_invoke 双路径实现
+- `core/graph_agent.py:L83-L97`: `_summarize_tool_result()` 工具 LLM 摘要
+- `core/graph_agent.py:L227-L257`: `_format_tool_error()` + `tool_node` 错误自愈
+- `core/graph_agent.py:L36-L53`: `search_document` 的 `[SEARCH_RETRY]` 重试逻辑
+- `core/graph_agent.py:L142-L160`: agent_node system prompt 完整规则
+- `app.py:L27-L29`: Streamlit 首次加载从 checkpointer 恢复对话
+- `main.py`: CLI 纯 checkpointer 模式 + `clear_history()` 集成
+
+---
+
 ## 2026-05-01
 
 ### 苏格拉底问答：工具自愈 + 并行调用 + 滑动窗口 vs 精准遗忘
