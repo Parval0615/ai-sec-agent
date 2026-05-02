@@ -276,32 +276,47 @@
 
 ### 今日任务
 - [x] 提交 LangGraph 迁移未提交改动（12+ 文件，含 graph_agent.py 首次提交）
-- [x] **LangGraph SQLite Checkpointer 持久化**
+- [x] **LangGraph SQLite Checkpointer 持久化**（v4）
   - `SqliteSaver` 编译进图，`graph_state.db` 自动保存每次 invoke 状态
-  - `thread_id` 参数区分不同对话线程
-  - 无 `chat_history` 时不传历史消息，仅传新 `HumanMessage`，由 checkpointer 的 `add_messages` reducer 自动拼接
-  - `clear_history(thread_id)` 支持精准清除持久化状态
-  - CLI (`main.py`) 切换为纯 checkpointer 模式，移除手动 `chat_history` 管理
-  - 验证：第二次调用能记住第一次对话中的用户名
-- [x] **工具长文本 LLM 摘要**
-  - 新增 `_summarize_tool_result(tool_name, full_content)`：调用 LLM 保留所有关键数据点，仅去冗余
-  - `tool_node()` 超长结果走摘要而非盲截断
-  - 摘要失败时 fallback 到旧截断逻辑
-- [x] ROADMAP.md 进度更新
-- [x] `requirements.txt` 补 `langgraph-checkpoint-sqlite`
+  - `thread_id` 区分不同对话线，`add_messages` reducer 自动拼接历史
+  - `clear_history(thread_id)` + `get_thread_messages(thread_id)` 完整 CRUD
+  - CLI (`main.py`) 切换为纯 checkpointer 模式
+  - 验证：第二次调用记得第一次对话中的用户名
+- [x] **工具长文本 LLM 摘要**（v4）
+  - `_summarize_tool_result(tool_name, full_content)`：保留关键数据点，去冗余
+  - `tool_node()` 超长走摘要，失败 fallback 到截断
+- [x] **LLM 引导的工具错误自愈**（v5）
+  - `_format_tool_error()`：结构化错误消息（错误类型/参数/Hint）
+  - agent_node system prompt: Self-healing 明确指引
+  - 满足 Phase 2 "错误自愈" 标准
+- [x] **Streamlit Checkpointer 集成**（v5）
+  - 移除手动 `chat_history` 转换，纯 checkpointer 模式
+  - 页面首次加载自动从 checkpointer 恢复对话（刷新不丢失）
+  - "清空对话" 按钮同步清除 checkpointer 状态 + UI
+- [x] **Phase 2 完成标准自检**
+  - 5 轮多工具 ReAct 对话测试：SQL检测/URL扫描/上下文记忆/工具追溯 — 全部通过
+  - 12 条消息正确持久化，checkpointer 恢复正常
 
-### LangGraph Agent v4 详情（Checkpointer + 工具摘要）
+### LangGraph Agent v5 详情（错误自愈 + Streamlit 集成）
 
-**改动文件**: `core/graph_agent.py`, `main.py`, `requirements.txt`
+**改动文件**: `core/graph_agent.py`, `app.py`, `main.py`, `requirements.txt`
 
-- **SQLite 持久化**：手动 `sqlite3.connect` + `SqliteSaver(conn)`（`from_conn_string` 是 context manager 不适合模块级复用）
-- **消息合并策略**：有 `chat_history`（Streamlit 模式）→ 每次唯一 `thread_id`，传完整历史；无 `chat_history`（CLI 模式）→ 固定 `thread_id`，仅传新消息，checkpointer 自动拼接
-- **工具摘要**：摘要 prompt 保留具体数据（数字、URL、IP、名称、风险等级），标注原始长度，控制在 ~600 字符
-- **向后兼容**：`chat_history` 参数保留，Streamlit (`app.py`) 无需改动
+- **结构化错误**：`_format_tool_error()` 每工具一个专属 Hint，告诉 LLM 如何修参数
+- **Streamlit 改造**：不再构建 `chat_history`（`HumanMessage`/`AIMessage` 转换），直接调 `graph_invoke(user_id=...)`，checkpointer 接管一切
+- **刷新恢复**：`st.session_state.messages` 首次为空时从 `get_thread_messages(user_id)` 恢复
+- **清理一致性**：角色切换和清空对话都调用 `clear_history()`，确保 UI 和持久层同步
+
+### Phase 2 完成标准自检
+
+| 标准 | 状态 | 说明 |
+|------|:----:|------|
+| LangGraph Studio 可视化 | N/A | 无LangGraph Studio，但代码通过5节点StateGraph实现可视化工作流 |
+| 工具失败自动重试与恢复 | [OK] | 结构化错误+Self-healing prompt+ReAct循环(最多3次工具调用) |
+| ReAct/Function Calling原理 | [OK] | 见 QA_log.md 苏格拉底讨论 |
 
 ### 明日任务
-- [ ] Phase 2 Day 5：多轮工具调用 ReAct 循环稳定性测试 + 异常恢复完善 + Phase 2 完成标准自检
 - [ ] OCR 扫描件支持（Phase 1 遗留）
+- [ ] Phase 3 启动：Prompt注入攻防靶场 + 输入意图分类器
 
 ---
 
