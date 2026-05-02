@@ -267,8 +267,41 @@
 - 测试：遗忘精度验证通过（4 条消息中 3 条含 IP 的被准确删除，不含 IP 的保留）
 - API 限流影响摘要测试（ModelScope Qwen3.5-35B 日配额耗尽），代码逻辑正确
 
+### 明日任务（05-01 设定）
+- [x] Phase 2 Day 4：LangGraph Checkpointer 持久化（SQLite 存储对话状态） + 工具长文本 LLM 摘要
+
+---
+
+## 2026-05-02
+
+### 今日任务
+- [x] 提交 LangGraph 迁移未提交改动（12+ 文件，含 graph_agent.py 首次提交）
+- [x] **LangGraph SQLite Checkpointer 持久化**
+  - `SqliteSaver` 编译进图，`graph_state.db` 自动保存每次 invoke 状态
+  - `thread_id` 参数区分不同对话线程
+  - 无 `chat_history` 时不传历史消息，仅传新 `HumanMessage`，由 checkpointer 的 `add_messages` reducer 自动拼接
+  - `clear_history(thread_id)` 支持精准清除持久化状态
+  - CLI (`main.py`) 切换为纯 checkpointer 模式，移除手动 `chat_history` 管理
+  - 验证：第二次调用能记住第一次对话中的用户名
+- [x] **工具长文本 LLM 摘要**
+  - 新增 `_summarize_tool_result(tool_name, full_content)`：调用 LLM 保留所有关键数据点，仅去冗余
+  - `tool_node()` 超长结果走摘要而非盲截断
+  - 摘要失败时 fallback 到旧截断逻辑
+- [x] ROADMAP.md 进度更新
+- [x] `requirements.txt` 补 `langgraph-checkpoint-sqlite`
+
+### LangGraph Agent v4 详情（Checkpointer + 工具摘要）
+
+**改动文件**: `core/graph_agent.py`, `main.py`, `requirements.txt`
+
+- **SQLite 持久化**：手动 `sqlite3.connect` + `SqliteSaver(conn)`（`from_conn_string` 是 context manager 不适合模块级复用）
+- **消息合并策略**：有 `chat_history`（Streamlit 模式）→ 每次唯一 `thread_id`，传完整历史；无 `chat_history`（CLI 模式）→ 固定 `thread_id`，仅传新消息，checkpointer 自动拼接
+- **工具摘要**：摘要 prompt 保留具体数据（数字、URL、IP、名称、风险等级），标注原始长度，控制在 ~600 字符
+- **向后兼容**：`chat_history` 参数保留，Streamlit (`app.py`) 无需改动
+
 ### 明日任务
-- [ ] Phase 2 Day 4：LangGraph Checkpointer 持久化（SQLite 存储对话状态） + 工具长文本 LLM 摘要
+- [ ] Phase 2 Day 5：多轮工具调用 ReAct 循环稳定性测试 + 异常恢复完善 + Phase 2 完成标准自检
+- [ ] OCR 扫描件支持（Phase 1 遗留）
 
 ---
 
