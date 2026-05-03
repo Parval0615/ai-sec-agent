@@ -24,9 +24,10 @@ from core.config import LLM_MODEL, LLM_API_BASE, LLM_API_KEY
 from core.tools import SEC_AGENT_TOOLS
 from core.rag import rag_query
 from security.permission import get_allowed_tools, DEFAULT_ROLE
-from security.input_check import check_malicious_input
+from security.input_check import check_malicious_input  # kept for backward compat
 from security.output_filter import mask_sensitive_info
 from security.audit_log import write_audit_log
+from ai_security.classifier import classify_with_old_fallback
 
 # ContextVar lets the RAG tool access the session's retriever without
 # putting non-serializable objects in LangGraph state.
@@ -80,6 +81,8 @@ class AgentState(TypedDict):
     audit_entries: Annotated[list, operator.add]
     tool_call_count: int
     conversation_summary: str
+    guardrail_category: str
+    guardrail_score: int
 
 
 RETRY_LIMIT = 3
@@ -108,14 +111,27 @@ def guardrail_node(state: AgentState) -> dict:
     last_msg = messages[-1]
     user_input = last_msg.content if hasattr(last_msg, 'content') else str(last_msg)
 
-    is_risk, risk_msg = check_malicious_input(user_input)
+    is_risk, risk_msg, detail = classify_with_old_fallback(user_input)
     if is_risk:
         return {
             "security_blocked": True,
             "messages": [AIMessage(content=risk_msg)],
-            "audit_entries": [f"SEC_BLOCK | {state['user_role']} | {user_input[:80]}"]
+            "audit_entries": [
+                f"SEC_BLOCK | {state['user_role']} | "
+                f"cat={detail.get('category','?')} | "
+                f"score={detail.get('risk_score','?')} | "
+                f"layer={detail.get('layer','?')} | "
+                f"reason={detail.get('reasoning','?')[:50]} | "
+                f"input={user_input[:60]}"
+            ],
+            "guardrail_category": detail.get("category", ""),
+            "guardrail_score": detail.get("risk_score", 0),
         }
-    return {"security_blocked": False}
+    return {
+        "security_blocked": False,
+        "guardrail_category": "normal",
+        "guardrail_score": detail.get("risk_score", 0),
+    }
 
 
 def agent_node(state: AgentState) -> dict:
@@ -477,6 +493,8 @@ def graph_invoke(
         "audit_entries": [],
         "tool_call_count": 0,
         "conversation_summary": summary,
+        "guardrail_category": "",
+        "guardrail_score": 0,
     }
 
     result = graph.invoke(state, config)

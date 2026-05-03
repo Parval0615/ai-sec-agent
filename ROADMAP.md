@@ -346,8 +346,30 @@
 - [x] 验证：正常 PDF 不触发 OCR 替换
 - [x] `requirements.txt` 补 `easyocr` + `numpy` + `Pillow`
 
+### 明日任务（05-02 设定）
+- [x] Phase 3 启动：Prompt注入攻防靶场 + 输入意图分类器
+
+---
+
+## 2026-05-03
+
+### 今日任务
+- [x] **Prompt注入Payload数据库** — `ai_security/payloads/`：105 条目，4 大类
+  - `injection.py` (30): 直接注入（忽略指令/角色覆盖/目标劫持/间接注入/格式化注入）
+  - `jailbreak.py` (30): 越狱（DAN变体/角色扮演/道德绕过/渐进式/情感操纵/多语言）
+  - `leakage.py` (20): 提示泄露（直接提取/间接探测/角色扮演/元数据/调试）
+  - `obfuscation.py` (25): 混淆绕过（Unicode/零宽字符/Base64/同义词/分隔符/分词）
+  - 每条标注 `bypasses_keyword_check`，**91% (96/105) 绕过旧版关键词检测**
+- [x] **LLM智能防火墙** — `ai_security/classifier.py`
+  - 双层架构：Layer 1 关键词+正则（<10ms）→ Layer 2 LLM语义分类（~500ms）
+  - 输出 risk_score(0-100) + category + reasoning + should_block + latency_ms
+  - `classify_with_old_fallback()` 向后兼容，旧版作为安全网兜底
+- [x] **集成 guardrail_node** — 替换为双层防火墙，AgentState 新增 guardrail_category/score
+- [x] **攻防评估框架** — `ai_security/evaluate.py`：批量测试 + 拦截率/误拦率/延迟/新旧对比
+
 ### 明日任务
-- [ ] Phase 3 启动：Prompt注入攻防靶场 + 输入意图分类器
+- [ ] Phase 3 Day 2: 全量攻防评估报告 + 对抗样本生成（同义词替换绕过审核）
+- [ ] 启动 Phase 3.3: AI驱动代码安全审计工具
 
 ---
 
