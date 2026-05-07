@@ -258,6 +258,16 @@ def init_rag_retriever(pdf_path: str = "docs/test.pdf", force_reindex: bool = Fa
     )
     splits = splitter.split_documents(docs)
 
+    # Security: scan chunks at ingestion time (L1 rule-based, no API calls)
+    try:
+        from ai_security.doc_scanner import sanitize_splits
+        splits, scan_reports = sanitize_splits(splits)
+        flagged = [r for r in scan_reports if r.get("is_suspicious")]
+        if flagged:
+            print(f"[SEC] 文档扫描: {len(splits)} chunks入库, {len(flagged)} 标记可疑(未入库)")
+    except ImportError:
+        pass
+
     embeddings = HuggingFaceEmbeddings(model_name=EMBEDDING_MODEL)
 
     # Collection name: PDF filename + chunk params + optional session suffix
@@ -379,6 +389,16 @@ def rag_query(retriever_dict, query: str,
         ranked_docs = all_docs[:_rerank_top_n]
     else:
         ranked_docs = rerank_docs(query, all_docs, _rerank_top_n)
+
+    # Security: scan retrieved chunks before building context (L1+L2 cascading)
+    try:
+        from ai_security.doc_scanner import scan_retrieved_chunks
+        chunk_texts = [d.page_content for d in ranked_docs]
+        scans = scan_retrieved_chunks(chunk_texts)
+        ranked_docs = [d for i, d in enumerate(ranked_docs)
+                       if not scans[i].get("should_filter")]
+    except ImportError:
+        pass
 
     context, source_docs = build_context_window(ranked_docs)
     return context, source_docs

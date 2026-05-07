@@ -1,0 +1,236 @@
+{
+  "timestamp": "2026-05-06T12:07:25.411490",
+  "total_scenarios": 12,
+  "payload_survived_count": 7,
+  "payload_survival_rate": 0.5833333333333334,
+  "details": [
+    {
+      "scenario_id": "ps_001",
+      "technique": "body_text",
+      "total_chunks": 1,
+      "text_length": 141,
+      "metadata_keys": [
+        "format",
+        "title",
+        "author",
+        "subject",
+        "creator",
+        "producer",
+        "creationDate",
+        "modDate"
+      ],
+      "payload_in_body_chunks": true,
+      "payload_in_metadata": null,
+      "payload_survived": true
+    },
+    {
+      "scenario_id": "ps_002",
+      "technique": "body_text",
+      "total_chunks": 1,
+      "text_length": 232,
+      "metadata_keys": [
+        "format",
+        "title",
+        "author",
+        "subject",
+        "creator",
+        "producer",
+        "creationDate",
+        "modDate"
+      ],
+      "payload_in_body_chunks": false,
+      "payload_in_metadata": null,
+      "payload_survived": null
+    },
+    {
+      "scenario_id": "ps_003",
+      "technique": "hidden_white",
+      "total_chunks": 1,
+      "text_length": 254,
+      "metadata_keys": [
+        "format",
+        "title",
+        "author",
+        "subject",
+        "creator",
+        "producer",
+        "creationDate",
+        "modDate"
+      ],
+      "payload_in_body_chunks": true,
+      "payload_in_metadata": null,
+      "payload_survived": true
+    },
+    {
+      "scenario_id": "ps_004",
+      "technique": "tiny_font",
+      "total_chunks": 1,
+      "text_length": 237,
+      "metadata_keys": [
+        "format",
+        "title",
+        "author",
+        "subject",
+        "creator",
+        "producer",
+        "creationDate",
+        "modDate"
+      ],
+      "payload_in_body_chunks": true,
+      "payload_in_metadata": null,
+      "payload_survived": true
+    },
+    {
+      "scenario_id": "ps_005",
+      "technique": "zero_width",
+      "total_chunks": 1,
+      "text_length": 150,
+      "metadata_keys": [
+        "format",
+        "title",
+        "author",
+        "subject",
+        "creator",
+        "producer",
+        "creationDate",
+        "modDate"
+      ],
+      "payload_in_body_chunks": false,
+      "payload_in_metadata": null,
+      "payload_survived": null
+    },
+    {
+      "scenario_id": "ps_006",
+      "technique": "metadata",
+      "total_chunks": 1,
+      "text_length": 225,
+      "metadata_keys": [
+        "format",
+        "title",
+        "author",
+        "subject",
+        "creator",
+        "producer",
+        "creationDate",
+        "modDate"
+      ],
+      "payload_in_body_chunks": null,
+      "payload_in_metadata": true,
+      "payload_survived": true
+    },
+    {
+      "scenario_id": "ps_007",
+      "technique": "base64",
+      "total_chunks": 1,
+      "text_length": 536,
+      "metadata_keys": [
+        "format",
+        "title",
+        "author",
+        "subject",
+        "creator",
+        "producer",
+        "creationDate",
+        "modDate"
+      ],
+      "payload_in_body_chunks": false,
+      "payload_in_metadata": null,
+      "payload_survived": null
+    },
+    {
+      "scenario_id": "ps_008",
+      "technique": "homoglyph",
+      "total_chunks": 1,
+      "text_length": 576,
+      "metadata_keys": [
+        "format",
+        "title",
+        "author",
+        "subject",
+        "creator",
+        "producer",
+        "creationDate",
+        "modDate"
+      ],
+      "payload_in_body_chunks": false,
+      "payload_in_metadata": null,
+      "payload_survived": null
+    },
+    {
+      "scenario_id": "ps_009",
+      "technique": "reversal",
+      "total_chunks": 1,
+      "text_length": 251,
+      "metadata_keys": [
+        "format",
+        "title",
+        "author",
+        "subject",
+        "creator",
+        "producer",
+        "creationDate",
+        "modDate"
+      ],
+      "payload_in_body_chunks": false,
+      "payload_in_metadata": null,
+      "payload_survived": null
+    },
+    {
+      "scenario_id": "ps_010",
+      "technique": "annotation",
+      "total_chunks": 1,
+      "text_length": 406,
+      "metadata_keys": [
+        "format",
+        "title",
+        "author",
+        "subject",
+        "creator",
+        "producer",
+        "creationDate",
+        "modDate"
+      ],
+      "payload_in_body_chunks": true,
+      "payload_in_metadata": null,
+      "payload_survived": true
+    },
+    {
+      "scenario_id": "ps_011",
+      "technique": "combined",
+      "total_chunks": 1,
+      "text_length": 390,
+      "metadata_keys": [
+        "format",
+        "title",
+        "author",
+        "subject",
+        "creator",
+        "producer",
+        "creationDate",
+        "modDate"
+      ],
+      "payload_in_body_chunks": true,
+      "payload_in_metadata": true,
+      "payload_survived": true
+    },
+    {
+      "scenario_id": "ps_012",
+      "technique": "body_text",
+      "total_chunks": 1,
+      "text_length": 245,
+      "metadata_keys": [
+        "format",
+        "title",
+        "author",
+        "subject",
+        "creator",
+        "producer",
+        "creationDate",
+        "modDate"
+      ],
+      "payload_in_body_chunks": true,
+      "payload_in_metadata": null,
+      "payload_survived": true
+    }
+  ]
+}

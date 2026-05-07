@@ -27,7 +27,7 @@ from security.permission import get_allowed_tools, DEFAULT_ROLE
 from security.input_check import check_malicious_input  # kept for backward compat
 from security.output_filter import mask_sensitive_info
 from security.audit_log import write_audit_log
-from ai_security.classifier import classify_with_old_fallback
+from ai_security.classifier import classify_with_old_fallback, classify_with_context
 
 # ContextVar lets the RAG tool access the session's retriever without
 # putting non-serializable objects in LangGraph state.
@@ -45,6 +45,20 @@ def search_document(query: str) -> str:
         return "[SEARCH_FAIL] No document is currently loaded. Ask the user to upload a PDF first."
 
     context, source_docs = rag_query(retriever, query)
+    # Security: scan retrieved chunks for poisoned content
+    if source_docs:
+        try:
+            from ai_security.doc_scanner import scan_retrieved_chunks
+            ctxs = [s.get("content", "") for s in source_docs]
+            scans = scan_retrieved_chunks(ctxs)
+            if scans:
+                poisoned = [s for s in scans if s.get("should_filter")]
+                safe = [s for s in scans if not s.get("should_filter")]
+                if poisoned:
+                    context += (f"\n\n[SEC] {len(poisoned)}/{len(scans)} 个检索片段"
+                                f"含可疑投毒内容，已过滤。安全片段: {len(safe)}")
+        except ImportError:
+            pass
     if not source_docs or "未找到" in context:
         return (
             f"[SEARCH_RETRY] No results for '{query[:100]}'. "
@@ -111,7 +125,21 @@ def guardrail_node(state: AgentState) -> dict:
     last_msg = messages[-1]
     user_input = last_msg.content if hasattr(last_msg, 'content') else str(last_msg)
 
-    is_risk, risk_msg, detail = classify_with_old_fallback(user_input)
+    # Extract prior user messages for multi-turn context detection
+    prior_user_msgs = []
+    for m in messages[:-1]:
+        if hasattr(m, 'content'):
+            content = m.content if isinstance(m.content, str) else str(m.content)
+            # Only collect user messages (not system or AI)
+            if hasattr(m, 'type') and m.type == 'human':
+                prior_user_msgs.append(content)
+
+    # Use context-aware classification if prior messages exist
+    if prior_user_msgs:
+        is_risk, risk_msg, detail = classify_with_context(user_input, prior_user_msgs)
+    else:
+        is_risk, risk_msg, detail = classify_with_old_fallback(user_input)
+
     if is_risk:
         return {
             "security_blocked": True,
@@ -144,6 +172,14 @@ def agent_node(state: AgentState) -> dict:
 
     if retriever and retriever.get("docs") and "search_knowledge_base" in allowed_names:
         available_tools.append(search_document)
+
+    # Phase 4.1: Admin gets dangerous simulated tools for policy demo
+    if role == "admin":
+        try:
+            from core.dangerous_tools import DANGEROUS_TOOLS
+            available_tools.extend(DANGEROUS_TOOLS)
+        except ImportError:
+            pass
 
     role_labels = {
         "guest": "Guest (knowledge base only)",
@@ -206,6 +242,26 @@ def output_filter_node(state: AgentState) -> dict:
             "messages": [AIMessage(content="[!] 输出内容包含可执行高危代码，已拦截")],
             "audit_entries": ["OUT_BLOCK"]
         }
+
+    # Fact-check RAG answers against retrieved context
+    if len(answer) > 50:
+        try:
+            from core.agent import fact_check
+            context_for_check = ""
+            for m in reversed(messages):
+                if isinstance(m, ToolMessage):
+                    content = m.content if hasattr(m, 'content') else str(m)
+                    if content and len(content) > len(context_for_check):
+                        context_for_check = content
+            if context_for_check:
+                verified = fact_check(answer, context_for_check, min_phrase_match_ratio=0.02)
+                if verified != answer:
+                    return {
+                        "messages": [AIMessage(content=verified)],
+                        "audit_entries": ["FACT_CHECK: answer not grounded in retrieved context"],
+                    }
+        except ImportError:
+            pass
 
     masked = mask_sensitive_info(answer)
     if masked != answer:
@@ -299,6 +355,21 @@ def tool_node(state: AgentState) -> dict:
                 content=f"Tool '{tool_name}' not available.", tool_call_id=tc["id"]
             ))
             continue
+
+        # Phase 4.1: Tool Policy Engine check
+        try:
+            from security.policy_engine import check_policy, write_policy_audit
+            allowed, reason, detail = check_policy(tool_name, tool_args, state)
+            if not allowed:
+                tool_messages.append(ToolMessage(
+                    content=f"[TOOL_POLICY_BLOCK] {reason}",
+                    tool_call_id=tc["id"]
+                ))
+                write_policy_audit(tool_name, tool_args, False, detail,
+                                   role=state.get("user_role", "user"))
+                continue
+        except ImportError:
+            pass
 
         try:
             result = tool_fn.invoke(tool_args)

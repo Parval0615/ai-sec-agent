@@ -100,8 +100,21 @@ Strong success criteria let you loop independently. Weak criteria ("make it work
 
 - 每去做一件任务时，只修改必须修改的文件，无关文件不要修改
 
-- 在工作中碰到bug时，维护一份bug.md
+- 在工作中碰到bug或者报错时，维护一份bug.md
   位置，当前project目录下
   记录，日期/bug的原因/修复的方法
   时机，修复完成后追加# 分条目，从新到旧倒序
+  
+- 这是默认的api
 
+  LLM_API_BASE = "https://api-inference.modelscope.cn/v1"
+
+  LLM_API_KEY = "ms-598b7f06-048b-4e3c-87c3-d68b986f2b63"
+
+​	如果改api限流了，更换成
+
+​	LLM_API_BASE = "https://siliconflow.cn"
+
+​	LLM_API_KEY = "sk-azdxqgbttrplfpczpugblusxjpncqhxdftyldnkzsuwhdgfo"
+
+​	以凌晨12点作为刷新点，十二点后请帮我换回默认api

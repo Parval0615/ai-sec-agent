@@ -1,0 +1,21 @@
+{
+  "timestamp": "2026-05-06T12:20:22.313012",
+  "test_results": {
+    "test_1_basic": {
+      "status": "fail",
+      "tenant_b_leaked": false,
+      "tenant_a_accessible": false,
+      "collection_a": "tenant_a_poison_cs800_co150_tenant_a",
+      "collection_b": "tenant_a_poison_cs800_co150_tenant_b"
+    },
+    "test_2_same_name": {
+      "status": "pass",
+      "leaked": false
+    },
+    "test_3_direct": {
+      "status": "pass",
+      "total_collections": 12
+    }
+  },
+  "overall_pass": false
+}
