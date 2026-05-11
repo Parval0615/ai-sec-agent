@@ -7,5 +7,10 @@ __pycache__/
 docs/
 faiss_index/
 chroma_db/
+checkpoints/
 *.pdf
 .DS_Store
+.claude/
+logs/audit.log
+R_raw/resume_text.txt
+R_raw/resume_final.txt

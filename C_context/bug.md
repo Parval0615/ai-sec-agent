@@ -10,7 +10,7 @@
 ### BUG-002: B 组评测 monkey-patch 不生效
 **原因**: `run_comparison.py` 通过 `rag_mod.rag_query = custom_func` 覆盖函数，但 `agent.py` 使用 `from core.rag import rag_query` 模块级导入。Python 的模块级 import 会创建本地引用副本，修改 `rag_mod.rag_query` 不会更新 `agent.py` 中的引用。因此 `agent_invoke` 内部仍调用原始 `rag_query`，B1/B2 策略从未真正生效。
 **修复**: 移除 monkey-patch，在 `rag_query` 中新增 `strategy` 字段支持 (`"vector_only"` / `"bm25_only"` / 默认 hybrid)。`run_comparison.py` 改为设置 `retriever["strategy"]` 传递策略。
-**影响范围**: `core/rag.py` rag_query(), `rag_evaluation/run_comparison.py` run_experiment_b()
+**影响范围**: `core/rag.py` rag_query(), `T_tools/run_comparison.py` run_experiment_b()
 
 ### BUG-001: langchain 1.x 不兼容 — 多个依赖缺失
 **原因**:

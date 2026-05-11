@@ -216,6 +216,111 @@ def _extract_categories_hint(text: str) -> str:
 
     return '\n'.join(hints) if hints else ""
 
+def _detect_format(path: str) -> str:
+    """Detect document format from file extension."""
+    ext = os.path.splitext(path)[1].lower()
+    if ext == ".pdf":
+        return "pdf"
+    if ext in (".html", ".htm"):
+        return "html"
+    if ext in (".eml", ".mht"):
+        return "email"
+    if ext in (".md", ".markdown"):
+        return "markdown"
+    return "text"
+
+
+def _load_document(path: str, fmt: str):
+    """Load document based on detected format."""
+    if fmt == "pdf":
+        from langchain_community.document_loaders import PyMuPDFLoader
+        return PyMuPDFLoader(path).load()
+    if fmt == "html":
+        from langchain_community.document_loaders import BSHTMLLoader
+        return BSHTMLLoader(path, open_encoding="utf-8").load()
+    if fmt == "markdown":
+        import re as _re
+        from langchain_community.document_loaders import TextLoader
+        raw = TextLoader(path, encoding="utf-8").load()
+        # Strip HTML tags from markdown (keep text content)
+        for doc in raw:
+            doc.page_content = _re.sub(r"<[^>]+>", "", doc.page_content)
+        return raw
+    if fmt == "email":
+        return _load_email_document(path)
+    # Fallback: treat as text
+    from langchain_community.document_loaders import TextLoader
+    return TextLoader(path, encoding="utf-8").load()
+
+
+def _load_email_document(path: str):
+    """Load .eml email with MIME parsing.
+
+    Extracts headers (Subject, From, To, X-Priority, X-Urgency) and text body.
+    Splits multipart boundaries into separate document pages.
+    """
+    import email as _email
+    import base64 as _base64
+    from langchain_core.documents import Document
+
+    with open(path, "r", encoding="utf-8", errors="replace") as f:
+        raw = f.read()
+
+    msg = _email.message_from_string(raw)
+    docs = []
+
+    # Extract headers as metadata
+    meta = {
+        "subject": str(_email.header.decode_header(msg.get("Subject", ""))[0][0]
+                       if _email.header.decode_header(msg.get("Subject", "")) else ""),
+        "from": msg.get("From", ""),
+        "to": msg.get("To", ""),
+        "x_priority": msg.get("X-Priority", ""),
+        "x_urgency": msg.get("X-Urgency", ""),
+        "file_name": os.path.basename(path),
+    }
+
+    content_parts = []
+    if msg.is_multipart():
+        for part in msg.walk():
+            ct = part.get_content_type()
+            payload = part.get_payload(decode=True)
+            if payload:
+                charset = part.get_content_charset() or "utf-8"
+                try:
+                    text = payload.decode(charset, errors="replace")
+                except (LookupError, UnicodeDecodeError):
+                    text = payload.decode("utf-8", errors="replace")
+                if ct == "text/plain" or ct == "text/html":
+                    content_parts.append((ct, text))
+    else:
+        payload = msg.get_payload(decode=True)
+        if payload:
+            charset = msg.get_content_charset() or "utf-8"
+            try:
+                text = payload.decode(charset, errors="replace")
+            except (LookupError, UnicodeDecodeError):
+                text = payload.decode("utf-8", errors="replace")
+            content_parts.append((msg.get_content_type(), text))
+
+    # Assemble document: headers + all body parts
+    full_text = f"Subject: {meta['subject']}\nFrom: {meta['from']}\nTo: {meta['to']}\n"
+    if meta["x_priority"]:
+        full_text += f"X-Priority: {meta['x_priority']}\n"
+    if meta["x_urgency"]:
+        full_text += f"X-Urgency: {meta['x_urgency']}\n"
+    full_text += "\n"
+    for ct, text in content_parts:
+        # Strip HTML tags for clean text extraction
+        import re as _re
+        clean = _re.sub(r"<[^>]+>", "", text)
+        full_text += clean + "\n"
+
+    doc = Document(page_content=full_text, metadata=meta)
+    docs.append(doc)
+    return docs
+
+
 def init_rag_retriever(pdf_path: str = "docs/test.pdf", force_reindex: bool = False,
                        session_id: str = None, persist: bool = True,
                        chunk_size: int = None, chunk_overlap: int = None,
@@ -240,8 +345,9 @@ def init_rag_retriever(pdf_path: str = "docs/test.pdf", force_reindex: bool = Fa
     _enable_rerank = enable_rerank if enable_rerank is not None else ENABLE_RERANK
     _vec_top_k = vec_top_k if vec_top_k is not None else TOP_K
     _rerank_top_n = rerank_top_n if rerank_top_n is not None else RERANK_TOP_N
-    loader = PyMuPDFLoader(pdf_path)
-    docs = loader.load()
+    # Phase A: Multi-format document loading
+    doc_fmt = _detect_format(pdf_path)
+    docs = _load_document(pdf_path, doc_fmt)
 
     for doc in docs:
         doc.metadata["file_name"] = os.path.basename(pdf_path)

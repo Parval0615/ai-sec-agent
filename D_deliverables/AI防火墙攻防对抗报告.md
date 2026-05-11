@@ -62,6 +62,15 @@
 
 共105条标注载荷，4大类别，每条标注 `severity` / `expected_block` / `bypasses_keyword_check`。
 
+**载荷来源构成**:
+| 来源 | 数量 | 说明 |
+|------|:---:|------|
+| HackAPrompt 竞赛数据集 | 30 | 2023年全球Prompt注入竞赛公开数据集，分层抽样 Level 1-8 |
+| Garak 风格探测 | 20 | 模拟 Garak 框架的 6 种探测类型 (dan/encoding/xtalk/knownbad/leakerplay/malwaregen) |
+| 自研中文变体 | 55 | 基于 OWASP LLM Top 10 分类体系构造，含中文特有的同义词/Unicode/多语言变体 |
+
+**标注方法**: `expected_block` 由项目作者根据 OWASP LLM Top 10 威胁分类标准人工标注。`bypasses_keyword_check` 通过跑旧版关键词检测器自动测定。标注局限性：单人标注无 inter-annotator agreement，存在标注偏倚风险——面试中应坦诚此点而非回避。
+
 | 类别 | 数量 | 子类别 | 关键发现 |
 |------|:---:|------|------|
 | 直接注入 (direct_injection) | 30 | 忽略指令/角色覆盖/目标劫持/间接注入/格式化注入 | 91%绕过旧版关键词检测 |

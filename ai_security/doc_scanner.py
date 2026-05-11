@@ -107,10 +107,57 @@ def _check_metadata_fields(metadata: dict) -> tuple[bool, list[str]]:
     return len(flags) > 0, flags
 
 
+def _detect_html_hidden_text(text: str) -> bool:
+    """Rule 8: HTML hidden text via CSS — display:none, visibility:hidden, font-size:0, opacity:0."""
+    hidden_patterns = [
+        r"display\s*:\s*none",
+        r"visibility\s*:\s*hidden",
+        r"font-size\s*:\s*0",
+        r"opacity\s*:\s*0",
+        r"<noscript>",
+    ]
+    return any(re.search(p, text, re.IGNORECASE) for p in hidden_patterns)
+
+
+def _detect_link_lure(text: str) -> bool:
+    """Rule 9: Link lure — <a href="evil.com"> but text suggests safe destination."""
+    # Find all <a> tags where href contains external-looking domain
+    import re as _re
+    links = _re.findall(r'<a\s+[^>]*href=["\']([^"\']+)["\'][^>]*>([^<]*)</a>', text, re.IGNORECASE)
+    suspicious_domains = ["evil", "exfil", "steal", "hack", "attack", "malware", "phish"]
+    for href, link_text in links:
+        if any(d in href.lower() for d in suspicious_domains):
+            # Link text doesn't match — possible lure
+            if not any(d in link_text.lower() for d in suspicious_domains):
+                return True
+    return False
+
+
+def _detect_forged_urgency(text: str) -> bool:
+    """Rule 10: Forged email urgency — X-Priority: 1 + executive action verbs."""
+    has_urgent_header = bool(re.search(r"X-Priority\s*:\s*1", text, re.IGNORECASE))
+    has_exec_verbs = bool(re.search(
+        r"(立即|马上|紧急|务必|尽快|立刻|immediately|urgent|mandatory)",
+        text, re.IGNORECASE,
+    ))
+    has_action = bool(re.search(
+        r"(执行|删除|运行|调用|写入|发送|execute|delete|run|call|write|send)",
+        text, re.IGNORECASE,
+    ))
+    return has_urgent_header and has_exec_verbs and has_action
+
+
+def _detect_markdown_html_injection(text: str) -> bool:
+    """Rule 11: Markdown HTML injection — <div style>, <script> embedded in .md files."""
+    script_tag = bool(re.search(r"<script[^>]*>", text, re.IGNORECASE))
+    hidden_div = bool(re.search(r"<div[^>]*style\s*=\s*[\"'][^\"']*display\s*:\s*none", text, re.IGNORECASE))
+    return script_tag or hidden_div
+
+
 def scan_chunk_l1(text: str, metadata: dict = None) -> dict:
     """L1 rule-based chunk scan. Returns {is_suspicious, risk_score, flags[], sanitized_text}.
 
-    Checks 7 attack vectors:
+    Checks 11 attack vectors:
     1. Zero-width character ratio > 5%
     2. Mixed-script / homoglyph detection
     3. Base64 encoding + decode hint
@@ -161,6 +208,26 @@ def scan_chunk_l1(text: str, metadata: dict = None) -> dict:
     meta_flagged, meta_flags = _check_metadata_fields(metadata)
     if meta_flagged:
         flags.extend(meta_flags)
+        risk_score = max(risk_score, 75)
+
+    # 8. HTML hidden text (CSS display:none, visibility:hidden, font-size:0)
+    if _detect_html_hidden_text(text):
+        flags.append("html_hidden_text")
+        risk_score = max(risk_score, 80)
+
+    # 9. Link lure detection (<a> with text != href target domain)
+    if _detect_link_lure(text):
+        flags.append("link_lure")
+        risk_score = max(risk_score, 65)
+
+    # 10. Forged email urgent headers (X-Priority + executive action verbs)
+    if _detect_forged_urgency(text):
+        flags.append("forged_urgency")
+        risk_score = max(risk_score, 70)
+
+    # 11. Markdown inline HTML injection (<div style>, <script> in .md)
+    if _detect_markdown_html_injection(text):
+        flags.append("markdown_html_injection")
         risk_score = max(risk_score, 75)
 
     return {
